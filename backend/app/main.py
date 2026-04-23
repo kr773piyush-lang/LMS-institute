@@ -16,7 +16,8 @@ logger = getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    Base.metadata.create_all(bind=engine)
+    if settings.auto_create_tables:
+        Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
         bootstrap_defaults(db)

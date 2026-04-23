@@ -1,7 +1,7 @@
 # Dependencies
 node_modules/
-package-lock.json
 yarn.lock
+.venv/
 
 # Environment variables
 .env
@@ -22,6 +22,7 @@ Thumbs.db
 # Build outputs
 dist/
 build/
+.next/
 *.log
 
 # Database
@@ -31,3 +32,7 @@ build/
 # Temporary files
 tmp/
 temp/
+__pycache__/
+*.pyc
+*.pyo
+*.tsbuildinfo

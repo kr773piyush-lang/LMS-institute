@@ -1,121 +1,112 @@
-# Multi-Tenant LMS Backend (FastAPI)
+# LMS Backend
 
-## 1. Project Overview
-This project is a production-ready backend for a Learning Management System (LMS) supporting:
-- Multi-tenant SaaS mode (multiple institutes in one deployment)
-- Single-tenant/self-hosted mode (one institute per deployment via `system_settings.default_institute_id`)
+FastAPI backend for the Institute LMS platform.
 
-Core capabilities include authentication, role-based access control, institute/user management, course hierarchy, enrollment/batch assignment, teacher mapping, and progress tracking.
+## Stack
 
-## 2. Tech Stack
-- Python 3.11+
 - FastAPI
+- SQLAlchemy 2.x
 - PostgreSQL
-- SQLAlchemy 2.0 ORM
-- Alembic migrations
-- Pydantic v2
-- JWT auth (`python-jose`)
-- Password hashing (`passlib` + bcrypt)
+- Alembic
+- Pydantic Settings
+- JWT authentication
 
-## 3. Setup Instructions
-1. Install dependencies
+## Local Setup
+
 ```bash
 cd backend
 python -m venv .venv
 # Windows
-.venv\\Scripts\\activate
+.venv\Scripts\activate
 # Linux/macOS
 source .venv/bin/activate
 pip install -r requirements.txt
+copy .env.example .env
 ```
 
-2. Configure environment (`.env`)
-```env
-DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/lms_db
-JWT_SECRET_KEY=change-me-in-production
-JWT_ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=1440
-DEFAULT_SUPER_ADMIN_EMAIL=admin@lms.local
-DEFAULT_SUPER_ADMIN_PASSWORD=Admin@12345
-```
+Update [`.env.example`](C:\Users\HP\Desktop\Project\Institute LMS system\backend\.env.example) values in your local `.env`, especially:
 
-3. Generate and run migrations
+- `DATABASE_URL`
+- `JWT_SECRET_KEY`
+- `DEFAULT_SUPER_ADMIN_EMAIL`
+- `DEFAULT_SUPER_ADMIN_PASSWORD`
+- `CORS_ORIGINS`
+
+Run migrations:
+
 ```bash
-alembic revision --autogenerate -m "init lms schema"
 alembic upgrade head
 ```
 
-4. Start server
+Start the API:
+
 ```bash
 uvicorn app.main:app --reload
 ```
 
-Server URL: `http://127.0.0.1:8000`  
-Swagger docs: `http://127.0.0.1:8000/docs`
+Docs:
 
-## 4. API Documentation
+- Swagger: `http://127.0.0.1:8000/docs`
+- Health: `http://127.0.0.1:8000/health`
 
-### Auth
-METHOD | ENDPOINT | DESCRIPTION
----|---|---
-POST | `/auth/register` | Register user (default role student, save selected course, pending approval)
-POST | `/auth/login` | Login and get JWT token
-GET | `/public/courses` | Public course list for registration page
-GET | `/public/subcourses?course_id=<id>` | Public subcourse list filtered by course
+## Production Notes
 
-### Institutes
-METHOD | ENDPOINT | DESCRIPTION
----|---|---
-GET | `/institutes` | Get all institutes
-POST | `/institutes` | Create institute
+- Set `APP_ENV=production`
+- Set `DEBUG=false`
+- Set `AUTO_CREATE_TABLES=false`
+- Use PostgreSQL, not SQLite
+- Run `alembic upgrade head` before starting the app
+- Set `CORS_ORIGINS` to your deployed frontend domain
 
-### Users
-METHOD | ENDPOINT | DESCRIPTION
----|---|---
-GET | `/users` | List users by tenant institute
-PUT | `/users/{user_id}/approve` | Approve/reject user and convert selected courses to enrollment on approval
-PUT | `/users/{user_id}/assign-institute` | Assign/change user institute (super admin)
-POST | `/users/{user_id}/roles` | Assign roles to user
+## Production Start Command
 
-### Courses
-METHOD | ENDPOINT | DESCRIPTION
----|---|---
-GET | `/courses` | Get courses for tenant institute
-POST | `/courses` | Create course
-POST | `/subcourses` | Create subcourse
-POST | `/modules` | Create module
-POST | `/content` | Add content
+Linux container / VPS:
 
-### Enrollment
-METHOD | ENDPOINT | DESCRIPTION
----|---|---
-POST | `/enroll` | Assign user to final enrollment (`user_courses`) and module access (`user_modules`)
-POST | `/assign-batch` | Assign user to batch
+```bash
+gunicorn app.main:app -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --workers 2 --timeout 120
+```
 
-### Batches
-METHOD | ENDPOINT | DESCRIPTION
----|---|---
-POST | `/batches` | Create batch
-POST | `/assign-teacher` | Assign teacher to batch
+## Docker
 
-### Students
-METHOD | ENDPOINT | DESCRIPTION
----|---|---
-GET | `/students/enrolled-courses` | View enrolled course/subcourse list
-GET | `/students/modules-content` | View module list with content
+Build:
 
-### Progress
-METHOD | ENDPOINT | DESCRIPTION
----|---|---
-POST | `/progress/mark-complete` | Mark module complete/update progress %
-GET | `/progress/me` | View user progress
+```bash
+docker build -t institute-lms-backend ./backend
+```
 
-## Tenancy Behavior
-- If `system_settings.allow_multi_tenant = true`, tenant context is user institute for authenticated requests.
-- If `false`, all requests use `system_settings.default_institute_id`.
-- Registration always assigns `default_institute_id`.
+Run:
 
-## Notes
-- Startup bootstrap creates default roles and default system settings (with a seeded default institute if missing).
-- Startup bootstrap creates a default super admin user if not already present.
-- For production, disable `Base.metadata.create_all` and rely on migrations only.
+```bash
+docker run --env-file backend/.env -p 8000:8000 institute-lms-backend
+```
+
+## Recommended Deploy Targets
+
+- Render
+- Railway
+- DigitalOcean App Platform
+- Any VPS with Docker + PostgreSQL
+
+## Required Environment Variables
+
+| Variable | Required | Example |
+|---|---|---|
+| `APP_ENV` | Yes | `production` |
+| `DEBUG` | Yes | `false` |
+| `AUTO_CREATE_TABLES` | Yes | `false` |
+| `DATABASE_URL` | Yes | `postgresql+psycopg://user:pass@host:5432/dbname` |
+| `JWT_SECRET_KEY` | Yes | `long-random-secret` |
+| `JWT_ALGORITHM` | Yes | `HS256` |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | Yes | `1440` |
+| `DEFAULT_SUPER_ADMIN_EMAIL` | Yes | `admin@example.com` |
+| `DEFAULT_SUPER_ADMIN_PASSWORD` | Yes | `StrongPassword123!` |
+| `CORS_ORIGINS` | Yes | `https://your-frontend-domain.com` |
+
+## Deployment Checklist
+
+1. Provision PostgreSQL.
+2. Set backend environment variables.
+3. Run `alembic upgrade head`.
+4. Start the backend with `gunicorn`.
+5. Verify `/health` returns `{"status":"ok"}`.
+6. Point the frontend `NEXT_PUBLIC_API_BASE_URL` to the backend URL.

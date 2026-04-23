@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     app_name: str = "Institute LMS Backend"
     app_env: str = Field(default="development")
     debug: bool = Field(default=False)
+    auto_create_tables: bool = Field(default=True)
 
     database_url: str = Field(
         default="postgresql+psycopg://postgres:postgres@localhost:5432/lms_db"
