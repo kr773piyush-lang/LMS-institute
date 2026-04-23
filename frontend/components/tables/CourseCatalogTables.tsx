@@ -18,9 +18,18 @@ import { DataTable } from "@/components/tables/DataTable";
 interface Props {
   courses: Course[];
   subcourses: SubCourse[];
+  selectedCourseId?: string | null;
+  onSelectCourse?: (courseId: string) => void;
+  instituteId?: string;
 }
 
-export function CourseCatalogTables({ courses, subcourses }: Props) {
+export function CourseCatalogTables({
+  courses,
+  subcourses,
+  selectedCourseId,
+  onSelectCourse,
+  instituteId
+}: Props) {
   const updateCourse = useUpdateCourseMutation();
   const deleteCourse = useDeleteCourseMutation();
   const updateSubcourse = useUpdateSubCourseMutation();
@@ -39,6 +48,10 @@ export function CourseCatalogTables({ courses, subcourses }: Props) {
     () => [{ label: "Select course", value: "" }, ...courses.map((course) => ({ label: course.course_name, value: course.course_id }))],
     [courses]
   );
+  const visibleSubcourses = useMemo(
+    () => subcourses.filter((subcourse) => !selectedCourseId || subcourse.course_id === selectedCourseId),
+    [selectedCourseId, subcourses]
+  );
 
   return (
     <div className="grid gap-6 xl:grid-cols-2">
@@ -54,6 +67,9 @@ export function CourseCatalogTables({ courses, subcourses }: Props) {
             header: "Actions",
             render: (row) => (
               <div className="flex gap-2">
+                <Button variant="secondary" onClick={() => onSelectCourse?.(row.course_id)}>
+                  {selectedCourseId === row.course_id ? "Selected" : "Open"}
+                </Button>
                 <Button
                   variant="secondary"
                   onClick={() => {
@@ -80,7 +96,7 @@ export function CourseCatalogTables({ courses, subcourses }: Props) {
       />
 
       <DataTable
-        rows={subcourses}
+        rows={visibleSubcourses}
         rowKey={(row) => row.subcourse_id}
         columns={[
           { key: "subcourse_name", header: "SubCourse Name" },
@@ -141,7 +157,7 @@ export function CourseCatalogTables({ courses, subcourses }: Props) {
               onClick={() => {
                 if (!selectedCourse) return;
                 updateCourse.mutate(
-                  { courseId: selectedCourse.course_id, payload: courseForm },
+                  { courseId: selectedCourse.course_id, payload: { ...courseForm, institute_id: instituteId } },
                   { onSuccess: () => setSelectedCourse(null) }
                 );
               }}
@@ -181,7 +197,10 @@ export function CourseCatalogTables({ courses, subcourses }: Props) {
               onClick={() => {
                 if (!selectedSubcourse) return;
                 updateSubcourse.mutate(
-                  { subcourseId: selectedSubcourse.subcourse_id, payload: subcourseForm },
+                  {
+                    subcourseId: selectedSubcourse.subcourse_id,
+                    payload: { ...subcourseForm, institute_id: instituteId }
+                  },
                   { onSuccess: () => setSelectedSubcourse(null) }
                 );
               }}

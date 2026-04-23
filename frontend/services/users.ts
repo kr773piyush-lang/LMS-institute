@@ -6,6 +6,13 @@ export async function getUsers(): Promise<User[]> {
   return data;
 }
 
+export async function getUsersByInstitute(instituteId?: string): Promise<User[]> {
+  const { data } = await api.get<User[]>("/users", {
+    params: instituteId ? { institute_id: instituteId } : undefined
+  });
+  return data;
+}
+
 export async function createUser(payload: {
   first_name: string;
   last_name: string;
@@ -59,5 +66,14 @@ export async function updateUser(
 
 export async function deleteUser(userId: string): Promise<MessageResponse> {
   const { data } = await api.delete<MessageResponse>(`/users/${userId}`);
+  return data;
+}
+
+export async function updateProfile(payload: {
+  email: string;
+  current_password: string;
+  new_password?: string;
+}): Promise<User> {
+  const { data } = await api.put<User>("/users/me/profile", payload);
   return data;
 }

@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import Content, Course, Module, SubCourse
+from app.models import Content, ContentProfile, Course, Module, SubCourse
 
 
 def create_course(db: Session, course: Course) -> Course:
@@ -26,6 +26,12 @@ def create_content(db: Session, content: Content) -> Content:
     db.add(content)
     db.flush()
     return content
+
+
+def create_content_profile(db: Session, profile: ContentProfile) -> ContentProfile:
+    db.add(profile)
+    db.flush()
+    return profile
 
 
 def get_course(

@@ -1,10 +1,11 @@
 import axios from "axios";
 
+import { pushToast } from "@/store/ui";
 import { getToken } from "@/utils/storage";
 
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000",
-  timeout: 6000
+  timeout: 20000
 });
 
 api.interceptors.request.use((config) => {
@@ -14,3 +15,19 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const message =
+      error?.code === "ECONNABORTED"
+        ? "The request took too long. Please try again."
+        :
+      error?.response?.data?.detail ||
+      error?.response?.data?.message ||
+      error?.message ||
+      "Something went wrong.";
+    pushToast(String(message), "error");
+    return Promise.reject(error);
+  }
+);

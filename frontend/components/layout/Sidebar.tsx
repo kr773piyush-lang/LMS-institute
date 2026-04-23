@@ -1,17 +1,18 @@
 "use client";
-
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 import { NAV_BY_ROLE } from "@/constants/navigation";
 import { useAuthStore } from "@/store/auth";
+import { useUiStore } from "@/store/ui";
 import { Button } from "@/components/ui/Button";
+import { AppLink } from "@/components/navigation/AppLink";
 
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const role = useAuthStore((state) => state.role);
   const logout = useAuthStore((state) => state.logout);
+  const startNavigation = useUiStore((state) => state.startNavigation);
 
   const navGroups = role ? NAV_BY_ROLE[role] : [];
 
@@ -36,7 +37,7 @@ export function Sidebar() {
                   (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
 
                 return (
-                  <Link
+                  <AppLink
                     key={item.href}
                     href={item.href}
                     className={`block rounded-xl border px-3 py-3 text-sm transition ${
@@ -49,7 +50,7 @@ export function Sidebar() {
                     {item.description ? (
                       <span className="mt-1 block text-xs text-slate-500">{item.description}</span>
                     ) : null}
-                  </Link>
+                  </AppLink>
                 );
               })}
             </div>
@@ -60,6 +61,7 @@ export function Sidebar() {
         variant="secondary"
         className="mt-8 w-full"
         onClick={() => {
+          startNavigation();
           logout();
           router.replace("/login");
         }}

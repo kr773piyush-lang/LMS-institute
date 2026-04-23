@@ -9,6 +9,9 @@ export interface CreateInstitutePayload {
   state: string;
   place: string;
   pincode: string;
+  admin_first_name: string;
+  admin_last_name: string;
+  admin_password: string;
 }
 
 export async function getInstitutes(): Promise<Institute[]> {
@@ -23,7 +26,12 @@ export async function createInstitute(payload: CreateInstitutePayload): Promise<
 
 export async function updateInstitute(
   instituteId: string,
-  payload: CreateInstitutePayload & { active: boolean }
+  payload: Omit<CreateInstitutePayload, "admin_first_name" | "admin_last_name" | "admin_password"> & {
+    active: boolean;
+    admin_first_name?: string;
+    admin_last_name?: string;
+    admin_password?: string;
+  }
 ): Promise<Institute> {
   const { data } = await api.put<Institute>(`/institutes/${instituteId}`, payload);
   return data;

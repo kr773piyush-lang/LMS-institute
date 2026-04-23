@@ -13,6 +13,7 @@ from app.schemas.common import MessageResponse
 from app.schemas.user import (
     AssignInstituteRequest,
     AssignRolesRequest,
+    ProfileUpdateRequest,
     UserCreateRequest,
     UserApproveRequest,
     UserRead,
@@ -25,6 +26,8 @@ from app.services.user_service import (
     create_user,
     delete_user,
     list_users,
+    list_users_for_institute,
+    update_profile,
     update_user,
 )
 
@@ -33,10 +36,13 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.get("", response_model=list[UserRead], dependencies=[Depends(require_roles("super_admin", "institute_admin"))])
 def get_users(
+    institute_id: str | None = None,
     db: Session = Depends(get_db),
     tenant: TenantContext = Depends(resolve_tenant_context),
     current_user: User = Depends(get_current_user),
 ) -> list[UserRead]:
+    if institute_id:
+        return list_users_for_institute(db, institute_id, current_user)
     return list_users(db, tenant, current_user)
 
 
@@ -122,3 +128,12 @@ def remove_user(
 ) -> MessageResponse:
     delete_user(db, user_id, tenant, current_user)
     return MessageResponse(message="User deleted successfully.")
+
+
+@router.put("/me/profile", response_model=UserRead)
+def update_my_profile(
+    payload: ProfileUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> UserRead:
+    return update_profile(db, current_user, payload)

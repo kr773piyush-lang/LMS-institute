@@ -8,3 +8,10 @@ export const ROLE_HOME: Record<Role, string> = {
 };
 
 export const PROTECTED_PREFIX = "/dashboard";
+
+export function getRoleHome(role: Role | null | undefined) {
+  if (!role) {
+    return "/login";
+  }
+  return ROLE_HOME[role] ?? "/login";
+}

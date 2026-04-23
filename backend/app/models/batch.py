@@ -1,5 +1,5 @@
 from sqlalchemy import Boolean, ForeignKey, String, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
 
@@ -20,3 +20,5 @@ class Batch(Base):
     )
     batch_name: Mapped[str] = mapped_column(String(255), nullable=False)
     active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+    detail = relationship("BatchDetail", back_populates="batch", uselist=False, cascade="all, delete-orphan")

@@ -56,6 +56,11 @@ export interface Content {
   module_id: string;
   title: string;
   type: string;
+  category?: string;
+  body_text?: string | null;
+  instructions?: string | null;
+  downloadable?: boolean;
+  response_type?: string | null;
   url: string;
   duration: number;
 }
@@ -67,6 +72,77 @@ export interface Batch {
   subcourse_id: string;
   batch_name: string;
   active: boolean;
+  detail?: {
+    description?: string | null;
+    room_name?: string | null;
+    schedule_notes?: string | null;
+    start_date?: string | null;
+    end_date?: string | null;
+  } | null;
+}
+
+export interface BatchDetail {
+  batch_id: string;
+  batch_name: string;
+  active: boolean;
+  description?: string | null;
+  room_name?: string | null;
+  schedule_notes?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  course: {
+    course_id: string;
+    course_name: string;
+  };
+  subcourse: {
+    subcourse_id: string;
+    subcourse_name: string;
+  };
+  teachers: User[];
+  students: User[];
+}
+
+export interface StudentBatchInfo {
+  batch_id: string;
+  batch_name: string;
+  course_id: string;
+  course_name: string;
+  subcourse_id: string;
+  subcourse_name: string;
+  description?: string | null;
+  room_name?: string | null;
+  schedule_notes?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+}
+
+export interface StudentSubmission {
+  submission_id: string;
+  response_type: string;
+  response_text?: string | null;
+  response_url?: string | null;
+  submitted_at: string;
+}
+
+export interface StudentWorkspaceContent extends Content {
+  submission?: StudentSubmission | null;
+}
+
+export interface StudentWorkspaceModule {
+  module_id: string;
+  module_name: string;
+  subcourse_id: string;
+  subcourse_name: string;
+  content: StudentWorkspaceContent[];
+}
+
+export interface StudentCourseWorkspace {
+  course_id: string;
+  course_name?: string;
+  batches: StudentBatchInfo[];
+  content_categories: string[];
+  selected_category?: string | null;
+  modules: StudentWorkspaceModule[];
 }
 
 export interface UserProgress {

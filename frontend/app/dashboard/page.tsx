@@ -3,18 +3,21 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-import { ROLE_HOME } from "@/constants/routes";
+import { getRoleHome } from "@/constants/routes";
 import { useAuthStore } from "@/store/auth";
+import { useUiStore } from "@/store/ui";
 
 export default function DashboardEntryPage() {
   const router = useRouter();
   const role = useAuthStore((state) => state.role);
+  const startNavigation = useUiStore((state) => state.startNavigation);
 
   useEffect(() => {
     if (role) {
-      router.replace(ROLE_HOME[role]);
+      startNavigation();
+      router.replace(getRoleHome(role));
     }
-  }, [role, router]);
+  }, [role, router, startNavigation]);
 
   return <p className="text-sm text-slate-600">Redirecting...</p>;
 }

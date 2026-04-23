@@ -1,9 +1,6 @@
 {
+  "/dashboard/institute-admin/courses/page": "app/dashboard/institute-admin/courses/page.js",
   "/(auth)/login/page": "app/(auth)/login/page.js",
-  "/dashboard/student/modules/page": "app/dashboard/student/modules/page.js",
-  "/dashboard/admin/institutes/page": "app/dashboard/admin/institutes/page.js",
-  "/dashboard/admin/users/page": "app/dashboard/admin/users/page.js",
-  "/(auth)/register/page": "app/(auth)/register/page.js",
-  "/dashboard/admin/teachers/page": "app/dashboard/admin/teachers/page.js",
-  "/dashboard/admin/courses/page": "app/dashboard/admin/courses/page.js"
+  "/dashboard/teacher/batches/page": "app/dashboard/teacher/batches/page.js",
+  "/dashboard/teacher/modules/page": "app/dashboard/teacher/modules/page.js"
 }

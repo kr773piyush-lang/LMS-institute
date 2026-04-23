@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState } from "react";
 
 import { Institute } from "@/types/lms";
+import { getAssignableRoles, ROLE_LABELS } from "@/constants/roles";
 import { useCreateUserMutation } from "@/hooks/useLmsQueries";
 import { useAuthStore } from "@/store/auth";
 import { Button } from "@/components/ui/Button";
@@ -25,6 +26,8 @@ export function UserCreateForm({
   const createUser = useCreateUserMutation();
   const role = useAuthStore((state) => state.role);
   const userInstituteId = useAuthStore((state) => state.instituteId);
+  const assignableRoles = getAssignableRoles(role);
+  const initialRole = defaultRoles[0] ?? assignableRoles[0] ?? "student";
 
   const [form, setForm] = useState({
     first_name: "",
@@ -35,7 +38,7 @@ export function UserCreateForm({
     is_approved: true,
     active: true,
     institute_id: userInstituteId ?? "",
-    role_names: defaultRoles.join(", ")
+    role_name: initialRole
   });
 
   const instituteOptions = useMemo(
@@ -49,10 +52,7 @@ export function UserCreateForm({
       {
         ...form,
         institute_id: role === "super_admin" ? form.institute_id || undefined : userInstituteId || undefined,
-        role_names: form.role_names
-          .split(",")
-          .map((roleName) => roleName.trim())
-          .filter(Boolean)
+        role_names: [form.role_name]
       },
       {
         onSuccess: () => {
@@ -65,7 +65,7 @@ export function UserCreateForm({
             is_approved: true,
             active: true,
             institute_id: userInstituteId ?? "",
-            role_names: defaultRoles.join(", ")
+            role_name: initialRole
           });
           onSuccess?.();
         }
@@ -83,7 +83,16 @@ export function UserCreateForm({
       <Input label="Email" type="email" required value={form.email} onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))} />
       <Input label="Mobile" required value={form.mob_no} onChange={(e) => setForm((prev) => ({ ...prev, mob_no: e.target.value }))} />
       <Input label="Password" type="password" required value={form.password} onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))} />
-      <Input label="Roles (comma-separated)" required value={form.role_names} onChange={(e) => setForm((prev) => ({ ...prev, role_names: e.target.value }))} />
+      <Select
+        label="Role"
+        options={assignableRoles.map((assignableRole) => ({
+          label: ROLE_LABELS[assignableRole],
+          value: assignableRole
+        }))}
+        value={form.role_name}
+        onChange={(e) => setForm((prev) => ({ ...prev, role_name: e.target.value }))}
+        required
+      />
       {role === "super_admin" ? (
         <Select
           label="Institute"

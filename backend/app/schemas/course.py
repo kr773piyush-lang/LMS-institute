@@ -21,6 +21,7 @@ class CourseRead(ORMBase):
 
 class CourseUpdate(BaseModel):
     course_name: str
+    institute_id: str | None = None
     active: bool = True
 
 
@@ -43,6 +44,7 @@ class SubCourseRead(ORMBase):
 class SubCourseUpdate(BaseModel):
     course_id: str
     subcourse_name: str
+    institute_id: str | None = None
     active: bool = True
 
 
@@ -70,6 +72,11 @@ class ContentCreate(BaseModel):
     type: str
     url: str
     duration: int
+    category: str = "reading"
+    body_text: str | None = None
+    instructions: str | None = None
+    downloadable: bool = False
+    response_type: str | None = None
     content_id: str | None = None
     institute_id: str | None = None
 
@@ -82,6 +89,11 @@ class ContentRead(ORMBase):
     type: str
     url: str
     duration: int
+    category: str = "reading"
+    body_text: str | None = None
+    instructions: str | None = None
+    downloadable: bool = False
+    response_type: str | None = None
 
 
 def str_or_uuid(value: str | None) -> str:

@@ -1,8 +1,24 @@
 import { api } from "@/services/client";
-import { Content, Course, MessageResponse, Module, SubCourse } from "@/types/lms";
+import {
+  Content,
+  Course,
+  MessageResponse,
+  Module,
+  StudentBatchInfo,
+  StudentCourseWorkspace,
+  StudentSubmission,
+  SubCourse
+} from "@/types/lms";
 
 export async function getCourses(): Promise<Course[]> {
   const { data } = await api.get<Course[]>("/courses");
+  return data;
+}
+
+export async function getCoursesByInstitute(instituteId?: string): Promise<Course[]> {
+  const { data } = await api.get<Course[]>("/courses", {
+    params: instituteId ? { institute_id: instituteId } : undefined
+  });
   return data;
 }
 
@@ -13,9 +29,18 @@ export async function getSubCourses(courseId?: string): Promise<SubCourse[]> {
   return data;
 }
 
+export async function getSubCoursesByInstitute(params?: {
+  institute_id?: string;
+  course_id?: string;
+}): Promise<SubCourse[]> {
+  const { data } = await api.get<SubCourse[]>("/subcourses", { params });
+  return data;
+}
+
 export async function getModules(params?: {
   course_id?: string;
   subcourse_id?: string;
+  institute_id?: string;
 }): Promise<Module[]> {
   const { data } = await api.get<Module[]>("/modules", { params });
   return data;
@@ -40,7 +65,7 @@ export async function createCourse(payload: { course_name: string; institute_id?
 
 export async function updateCourse(
   courseId: string,
-  payload: { course_name: string; active: boolean }
+  payload: { course_name: string; active: boolean; institute_id?: string }
 ): Promise<Course> {
   const { data } = await api.put<Course>(`/courses/${courseId}`, payload);
   return data;
@@ -62,7 +87,7 @@ export async function createSubCourse(payload: {
 
 export async function updateSubCourse(
   subcourseId: string,
-  payload: { course_id: string; subcourse_name: string; active: boolean }
+  payload: { course_id: string; subcourse_name: string; active: boolean; institute_id?: string }
 ): Promise<SubCourse> {
   const { data } = await api.put<SubCourse>(`/subcourses/${subcourseId}`, payload);
   return data;
@@ -89,6 +114,11 @@ export async function addContent(payload: {
   type: string;
   url: string;
   duration: number;
+  category?: string;
+  body_text?: string;
+  instructions?: string;
+  downloadable?: boolean;
+  response_type?: string;
   institute_id?: string;
 }): Promise<Content> {
   const { data } = await api.post<Content>("/content", payload);
@@ -108,11 +138,38 @@ export async function getStudentModules(): Promise<
       content_id: string;
       title: string;
       type: string;
+      category?: string;
+      body_text?: string | null;
+      instructions?: string | null;
+      downloadable?: boolean;
+      response_type?: string | null;
       url: string;
       duration: number;
     }>;
   }>
 > {
   const { data } = await api.get("/students/modules-content");
+  return data;
+}
+
+export async function getStudentBatches(): Promise<StudentBatchInfo[]> {
+  const { data } = await api.get<StudentBatchInfo[]>("/students/batches");
+  return data;
+}
+
+export async function getStudentCourseWorkspace(courseId: string, category?: string): Promise<StudentCourseWorkspace> {
+  const { data } = await api.get<StudentCourseWorkspace>(`/students/course-workspace/${courseId}`, {
+    params: category ? { category } : undefined
+  });
+  return data;
+}
+
+export async function submitStudentContentResponse(payload: {
+  content_id: string;
+  response_type: string;
+  response_text?: string;
+  response_url?: string;
+}): Promise<StudentSubmission> {
+  const { data } = await api.post<StudentSubmission>("/students/content-submissions", payload);
   return data;
 }

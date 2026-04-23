@@ -1,13 +1,51 @@
 import { api } from "@/services/client";
-import { Batch } from "@/types/lms";
+import { Batch, BatchDetail } from "@/types/lms";
+
+export async function getBatches(instituteId?: string): Promise<Batch[]> {
+  const { data } = await api.get<Batch[]>("/batches", {
+    params: instituteId ? { institute_id: instituteId } : undefined
+  });
+  return data;
+}
+
+export async function getBatchDetail(batchId: string, instituteId?: string): Promise<BatchDetail> {
+  const { data } = await api.get<BatchDetail>(`/batches/${batchId}/details`, {
+    params: instituteId ? { institute_id: instituteId } : undefined
+  });
+  return data;
+}
 
 export async function createBatch(payload: {
   course_id: string;
   subcourse_id: string;
   batch_name: string;
+  description?: string;
+  room_name?: string;
+  schedule_notes?: string;
+  start_date?: string;
+  end_date?: string;
   institute_id?: string;
 }): Promise<Batch> {
   const { data } = await api.post<Batch>("/batches", payload);
+  return data;
+}
+
+export async function updateBatch(
+  batchId: string,
+  payload: {
+    course_id: string;
+    subcourse_id: string;
+    batch_name: string;
+    description?: string;
+    room_name?: string;
+    schedule_notes?: string;
+    start_date?: string;
+    end_date?: string;
+    institute_id?: string;
+    active: boolean;
+  }
+): Promise<Batch> {
+  const { data } = await api.put<Batch>(`/batches/${batchId}`, payload);
   return data;
 }
 

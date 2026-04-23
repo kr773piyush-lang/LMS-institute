@@ -27,6 +27,11 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
           description: "Manage course hierarchy and content"
         },
         {
+          label: "Batches",
+          href: "/dashboard/admin/batches",
+          description: "Manage institute delivery groups"
+        },
+        {
           label: "Users Info",
           href: "/dashboard/admin/users",
           description: "Approve users and assign roles"
@@ -35,8 +40,17 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
           label: "Teachers Info",
           href: "/dashboard/admin/teachers",
           description: "Manage teacher accounts"
+        },
+        {
+          label: "Notifications",
+          href: "/dashboard/admin/notifications",
+          description: "Review pending registrations"
         }
       ]
+    },
+    {
+      title: "Personal",
+      items: [{ label: "Profile", href: "/dashboard/profile", description: "Update login credentials" }]
     }
   ],
   institute_admin: [
@@ -49,6 +63,11 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
           description: "Manage approvals and enrollment"
         },
         {
+          label: "Teachers Info",
+          href: "/dashboard/institute-admin/teachers",
+          description: "Manage teacher accounts"
+        },
+        {
           label: "Courses & SubCourses",
           href: "/dashboard/institute-admin/courses",
           description: "Create academic structure"
@@ -59,6 +78,10 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
           description: "Organize delivery groups"
         }
       ]
+    },
+    {
+      title: "Personal",
+      items: [{ label: "Profile", href: "/dashboard/profile", description: "Update login credentials" }]
     }
   ],
   teacher: [
@@ -68,6 +91,10 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
         { label: "My Batches", href: "/dashboard/teacher/batches", description: "Assigned class groups" },
         { label: "Modules", href: "/dashboard/teacher/modules", description: "Learning modules" }
       ]
+    },
+    {
+      title: "Personal",
+      items: [{ label: "Profile", href: "/dashboard/profile", description: "Update login credentials" }]
     }
   ],
   student: [
@@ -77,6 +104,10 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
         { label: "My Courses", href: "/dashboard/student/courses", description: "Enrolled programs" },
         { label: "My Modules", href: "/dashboard/student/modules", description: "Study material and progress" }
       ]
+    },
+    {
+      title: "Personal",
+      items: [{ label: "Profile", href: "/dashboard/profile", description: "Update login credentials" }]
     }
   ]
 };

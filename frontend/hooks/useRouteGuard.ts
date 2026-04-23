@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-import { ROLE_HOME } from "@/constants/routes";
+import { getRoleHome } from "@/constants/routes";
 import { useAuthStore } from "@/store/auth";
 
 export function useRouteGuard() {
@@ -26,16 +26,16 @@ export function useRouteGuard() {
       return;
     }
     if (pathname.startsWith("/dashboard/admin") && role !== "super_admin") {
-      router.replace(ROLE_HOME[role]);
+      router.replace(getRoleHome(role));
     }
     if (pathname.startsWith("/dashboard/institute-admin") && role !== "institute_admin") {
-      router.replace(ROLE_HOME[role]);
+      router.replace(getRoleHome(role));
     }
     if (pathname.startsWith("/dashboard/teacher") && role !== "teacher") {
-      router.replace(ROLE_HOME[role]);
+      router.replace(getRoleHome(role));
     }
     if (pathname.startsWith("/dashboard/student") && role !== "student") {
-      router.replace(ROLE_HOME[role]);
+      router.replace(getRoleHome(role));
     }
   }, [isHydrated, pathname, role, router, token]);
 

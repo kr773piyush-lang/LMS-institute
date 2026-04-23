@@ -30,8 +30,11 @@ from app.services.course_service import (
     delete_course,
     delete_subcourse,
     list_courses,
+    list_courses_for_institute,
     list_modules,
+    list_modules_for_institute,
     list_subcourses,
+    list_subcourses_for_institute,
     list_public_courses,
     list_public_subcourses,
     update_course,
@@ -51,16 +54,20 @@ def add_course(
     payload: CourseCreate,
     db: Session = Depends(get_db),
     tenant: TenantContext = Depends(resolve_tenant_context),
+    current_user: User = Depends(get_current_user),
 ) -> CourseRead:
-    return create_course(db, payload, tenant)
+    return create_course(db, payload, tenant, current_user)
 
 
 @router.get("/courses", response_model=list[CourseRead], dependencies=[Depends(require_roles("super_admin", "institute_admin", "teacher", "student"))])
 def get_courses(
+    institute_id: str | None = None,
     db: Session = Depends(get_db),
     tenant: TenantContext = Depends(resolve_tenant_context),
     current_user: User = Depends(get_current_user),
 ) -> list[CourseRead]:
+    if institute_id:
+        return list_courses_for_institute(db, institute_id, current_user)
     return list_courses(db, tenant, current_user)
 
 
@@ -70,11 +77,14 @@ def get_courses(
     dependencies=[Depends(require_roles("super_admin", "institute_admin", "teacher", "student"))],
 )
 def get_subcourses(
+    institute_id: str | None = None,
     course_id: str | None = None,
     db: Session = Depends(get_db),
     tenant: TenantContext = Depends(resolve_tenant_context),
     current_user: User = Depends(get_current_user),
 ) -> list[SubCourseRead]:
+    if institute_id:
+        return list_subcourses_for_institute(db, institute_id, current_user, course_id=course_id)
     return list_subcourses(db, tenant, current_user, course_id=course_id)
 
 
@@ -84,12 +94,17 @@ def get_subcourses(
     dependencies=[Depends(require_roles("super_admin", "institute_admin", "teacher", "student"))],
 )
 def get_modules(
+    institute_id: str | None = None,
     course_id: str | None = None,
     subcourse_id: str | None = None,
     db: Session = Depends(get_db),
     tenant: TenantContext = Depends(resolve_tenant_context),
     current_user: User = Depends(get_current_user),
 ) -> list[ModuleRead]:
+    if institute_id:
+        return list_modules_for_institute(
+            db, institute_id, current_user, course_id=course_id, subcourse_id=subcourse_id
+        )
     return list_modules(db, tenant, current_user, course_id=course_id, subcourse_id=subcourse_id)
 
 
@@ -115,8 +130,9 @@ def add_subcourse(
     payload: SubCourseCreate,
     db: Session = Depends(get_db),
     tenant: TenantContext = Depends(resolve_tenant_context),
+    current_user: User = Depends(get_current_user),
 ) -> SubCourseRead:
-    return create_subcourse(db, payload, tenant)
+    return create_subcourse(db, payload, tenant, current_user)
 
 
 @router.post(
@@ -129,8 +145,9 @@ def add_module(
     payload: ModuleCreate,
     db: Session = Depends(get_db),
     tenant: TenantContext = Depends(resolve_tenant_context),
+    current_user: User = Depends(get_current_user),
 ) -> ModuleRead:
-    return create_module(db, payload, tenant)
+    return create_module(db, payload, tenant, current_user)
 
 
 @router.post(
@@ -143,8 +160,9 @@ def add_content(
     payload: ContentCreate,
     db: Session = Depends(get_db),
     tenant: TenantContext = Depends(resolve_tenant_context),
+    current_user: User = Depends(get_current_user),
 ) -> ContentRead:
-    return create_content(db, payload, tenant)
+    return create_content(db, payload, tenant, current_user)
 
 
 @router.put(

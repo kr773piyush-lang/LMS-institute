@@ -40,7 +40,7 @@ export default function AdminUsersPage() {
         {isLoading ? (
           <p>Loading users...</p>
         ) : (
-          <UsersTable users={users} allowInstituteAssign title="Edit User" />
+          <UsersTable users={users} title="Edit User" />
         )}
       </Card>
     </div>

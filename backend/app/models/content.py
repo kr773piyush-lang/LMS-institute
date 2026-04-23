@@ -18,3 +18,24 @@ class Content(Base):
     duration: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     module = relationship("Module", back_populates="contents")
+    profile = relationship("ContentProfile", back_populates="content", uselist=False, cascade="all, delete-orphan")
+
+    @property
+    def category(self) -> str:
+        return self.profile.category if self.profile is not None else self.type
+
+    @property
+    def body_text(self) -> str | None:
+        return self.profile.body_text if self.profile is not None else None
+
+    @property
+    def instructions(self) -> str | None:
+        return self.profile.instructions if self.profile is not None else None
+
+    @property
+    def downloadable(self) -> bool:
+        return self.profile.downloadable if self.profile is not None else False
+
+    @property
+    def response_type(self) -> str | None:
+        return self.profile.response_type if self.profile is not None else None

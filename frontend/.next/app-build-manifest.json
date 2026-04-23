@@ -6,10 +6,10 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/page": [
+    "/loading": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
+      "static/chunks/app/loading.js"
     ],
     "/(auth)/layout": [
       "static/chunks/webpack.js",
@@ -26,6 +26,66 @@
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/layout.js"
     ],
+    "/dashboard/loading": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/loading.js"
+    ],
+    "/dashboard/admin/institutes/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/admin/institutes/page.js"
+    ],
+    "/dashboard/admin/institutes/[id]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/admin/institutes/[id]/page.js"
+    ],
+    "/dashboard/institute-admin/users/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/institute-admin/users/page.js"
+    ],
+    "/dashboard/institute-admin/teachers/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/institute-admin/teachers/page.js"
+    ],
+    "/dashboard/institute-admin/courses/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/institute-admin/courses/page.js"
+    ],
+    "/dashboard/institute-admin/batches/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/institute-admin/batches/page.js"
+    ],
+    "/dashboard/admin/notifications/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/admin/notifications/page.js"
+    ],
+    "/dashboard/admin/teachers/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/admin/teachers/page.js"
+    ],
+    "/dashboard/admin/users/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/admin/users/page.js"
+    ],
+    "/dashboard/teacher/batches/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/teacher/batches/page.js"
+    ],
+    "/dashboard/teacher/modules/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/teacher/modules/page.js"
+    ],
     "/dashboard/student/courses/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -36,25 +96,25 @@
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/student/modules/page.js"
     ],
-    "/dashboard/admin/institutes/page": [
+    "/dashboard/student/courses/[courseId]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/admin/institutes/page.js"
+      "static/chunks/app/dashboard/student/courses/[courseId]/page.js"
     ],
-    "/dashboard/admin/users/page": [
+    "/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/admin/users/page.js"
+      "static/chunks/app/page.js"
     ],
-    "/(auth)/register/page": [
+    "/dashboard/profile/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/register/page.js"
+      "static/chunks/app/dashboard/profile/page.js"
     ],
-    "/dashboard/admin/teachers/page": [
+    "/dashboard/admin/batches/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/admin/teachers/page.js"
+      "static/chunks/app/dashboard/admin/batches/page.js"
     ],
     "/dashboard/admin/courses/page": [
       "static/chunks/webpack.js",

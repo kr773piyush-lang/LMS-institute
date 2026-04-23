@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { getAssignableRoles, ROLE_LABELS } from "@/constants/roles";
 import {
   useApproveUserMutation,
   useDeleteUserMutation,
@@ -18,14 +19,12 @@ import { useAuthStore } from "@/store/auth";
 
 interface Props {
   users: User[];
-  allowInstituteAssign?: boolean;
   roleFilter?: "teacher" | "student" | "institute_admin" | "super_admin";
   title?: string;
 }
 
 export function UsersTable({
   users,
-  allowInstituteAssign = false,
   roleFilter,
   title = "Manage User Access"
 }: Props) {
@@ -34,6 +33,7 @@ export function UsersTable({
   const deleteUser = useDeleteUserMutation();
   const { data: institutes = [] } = useInstitutesQuery();
   const role = useAuthStore((state) => state.role);
+  const assignableRoles = getAssignableRoles(role);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [form, setForm] = useState({
     first_name: "",
@@ -43,17 +43,12 @@ export function UsersTable({
     is_approved: false,
     active: true,
     institute_id: "",
-    role_names: "student"
+    role_name: "student"
   });
 
   const rows = roleFilter
     ? users.filter((user) => user.role_names.includes(roleFilter))
     : users;
-
-  const instituteOptions = [
-    { label: "Select institute", value: "" },
-    ...institutes.map((institute) => ({ label: institute.name, value: institute.institute_id }))
-  ];
 
   const openEdit = (user: User) => {
     setSelectedUser(user);
@@ -65,7 +60,7 @@ export function UsersTable({
       is_approved: user.is_approved,
       active: user.active,
       institute_id: user.institute_id,
-      role_names: user.role_names.join(", ")
+      role_name: user.role_names.find((roleName) => assignableRoles.includes(roleName as never)) ?? "student"
     });
   };
 
@@ -136,19 +131,16 @@ export function UsersTable({
             value={form.mob_no}
             onChange={(event) => setForm((prev) => ({ ...prev, mob_no: event.target.value }))}
           />
-          <Input
-            label="Role names (comma-separated)"
-            value={form.role_names}
-            onChange={(event) => setForm((prev) => ({ ...prev, role_names: event.target.value }))}
+          <Input label="Institute" value={institutes.find((item) => item.institute_id === form.institute_id)?.name ?? selectedUser?.institute_name ?? ""} disabled />
+          <Select
+            label="Role"
+            options={assignableRoles.map((assignableRole) => ({
+              label: ROLE_LABELS[assignableRole],
+              value: assignableRole
+            }))}
+            value={form.role_name}
+            onChange={(event) => setForm((prev) => ({ ...prev, role_name: event.target.value }))}
           />
-          {allowInstituteAssign && role === "super_admin" ? (
-            <Select
-              label="Institute"
-              options={instituteOptions}
-              value={form.institute_id}
-              onChange={(event) => setForm((prev) => ({ ...prev, institute_id: event.target.value }))}
-            />
-          ) : null}
           <label className="flex items-center gap-2 text-sm text-slate-700">
             <input
               type="checkbox"
@@ -181,11 +173,7 @@ export function UsersTable({
                       mob_no: form.mob_no,
                       is_approved: form.is_approved,
                       active: form.active,
-                      institute_id: allowInstituteAssign ? form.institute_id : undefined,
-                      role_names: form.role_names
-                        .split(",")
-                        .map((roleName) => roleName.trim())
-                        .filter(Boolean)
+                      role_names: [form.role_name]
                     }
                   },
                   {

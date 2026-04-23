@@ -8,10 +8,10 @@ from app.crud import courses as course_crud
 from app.crud import enrollment as enrollment_crud
 from app.crud import roles as roles_crud
 from app.crud import users as users_crud
-from app.core.security import get_password_hash
+from app.core.security import get_password_hash, verify_password
 from app.dependencies.tenant import TenantContext
 from app.models import Auth, User, UserCourse, UserModule, UserRole
-from app.schemas.user import UserCreateRequest, UserRead, UserUpdateRequest
+from app.schemas.user import ProfileUpdateRequest, UserCreateRequest, UserRead, UserUpdateRequest
 
 
 def _serialize_user(db: Session, user: User) -> UserRead:
@@ -35,11 +35,20 @@ def _serialize_user(db: Session, user: User) -> UserRead:
 
 
 def list_users(db: Session, tenant: TenantContext, current_user: User) -> list[UserRead]:
+    return list_users_for_institute(db, tenant.institute_id, current_user)
+
+
+def list_users_for_institute(
+    db: Session, institute_id: str, current_user: User
+) -> list[UserRead]:
     current_roles = set(roles_crud.get_role_names_for_user(db, current_user.user_id))
     if "super_admin" in current_roles:
         users = users_crud.get_all_users(db)
     else:
-        users = users_crud.get_users_by_institute(db, tenant.institute_id, include_inactive=False)
+        users = users_crud.get_users_by_institute(db, institute_id, include_inactive=False)
+
+    if "super_admin" in current_roles:
+        users = [user for user in users if user.institute_id == institute_id]
     return [_serialize_user(db, user) for user in users]
 
 
@@ -223,9 +232,6 @@ def update_user(
     user.mob_no = payload.mob_no
     user.is_approved = payload.is_approved
     user.active = payload.active
-    if payload.institute_id and "super_admin" in current_roles:
-        user.institute_id = payload.institute_id
-
     if payload.role_names is not None:
         target_roles = {role_name.strip() for role_name in payload.role_names if role_name.strip()}
         existing_assignments = {assignment.role.role_name: assignment for assignment in user.roles if assignment.role}
@@ -281,3 +287,26 @@ def delete_user(db: Session, user_id: str, tenant: TenantContext, current_user: 
             status_code=status.HTTP_409_CONFLICT,
             detail="User cannot be deactivated because related data still exists.",
         ) from exc
+
+
+def update_profile(db: Session, current_user: User, payload: ProfileUpdateRequest) -> UserRead:
+    if current_user.auth is None or not verify_password(
+        payload.current_password, current_user.auth.password_hash
+    ):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Current password is incorrect.")
+
+    current_user.email = str(payload.email)
+    if payload.new_password:
+        current_user.auth.password_hash = get_password_hash(payload.new_password)
+
+    try:
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Profile update conflicts with existing data.",
+        ) from exc
+
+    db.refresh(current_user)
+    return _serialize_user(db, current_user)

@@ -52,3 +52,9 @@ class UserCreateRequest(BaseModel):
     active: bool = True
     institute_id: str | None = None
     role_names: list[str] = ["student"]
+
+
+class ProfileUpdateRequest(BaseModel):
+    email: EmailStr
+    current_password: str
+    new_password: str | None = None

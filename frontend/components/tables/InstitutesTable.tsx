@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 
 import { Institute } from "@/types/lms";
@@ -11,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { DataTable } from "@/components/tables/DataTable";
+import { AppLink } from "@/components/navigation/AppLink";
 
 interface Props {
   institutes: Institute[];
@@ -28,7 +28,10 @@ export function InstitutesTable({ institutes }: Props) {
     state: "",
     place: "",
     pincode: "",
-    active: true
+    active: true,
+    admin_first_name: "",
+    admin_last_name: "",
+    admin_password: ""
   });
 
   const openEdit = (institute: Institute) => {
@@ -41,7 +44,10 @@ export function InstitutesTable({ institutes }: Props) {
       state: institute.state,
       place: institute.place,
       pincode: institute.pincode,
-      active: institute.active
+      active: institute.active,
+      admin_first_name: "",
+      admin_last_name: "",
+      admin_password: ""
     });
   };
 
@@ -51,7 +57,15 @@ export function InstitutesTable({ institutes }: Props) {
         rows={institutes}
         rowKey={(row) => row.institute_id}
         columns={[
-          { key: "name", header: "Institute Name" },
+          {
+            key: "name",
+            header: "Institute Name",
+            render: (row) => (
+              <AppLink href={`/dashboard/admin/institutes/${row.institute_id}`} className="font-medium text-brand-700 hover:underline">
+                {row.name}
+              </AppLink>
+            )
+          },
           { key: "email", header: "Email" },
           { key: "mob_no", header: "Mobile" },
           { key: "place", header: "Place" },
@@ -65,6 +79,9 @@ export function InstitutesTable({ institutes }: Props) {
                 <Button variant="secondary" onClick={() => openEdit(row)}>
                   Edit
                 </Button>
+                <AppLink href={`/dashboard/admin/institutes/${row.institute_id}`}>
+                  <Button variant="secondary">View</Button>
+                </AppLink>
                 <Button
                   variant="danger"
                   onClick={() => {
@@ -90,6 +107,22 @@ export function InstitutesTable({ institutes }: Props) {
           <Input label="State" value={form.state} onChange={(e) => setForm((prev) => ({ ...prev, state: e.target.value }))} />
           <Input label="Place" value={form.place} onChange={(e) => setForm((prev) => ({ ...prev, place: e.target.value }))} />
           <Input label="Pincode" value={form.pincode} onChange={(e) => setForm((prev) => ({ ...prev, pincode: e.target.value }))} />
+          <Input
+            label="Admin First Name"
+            value={form.admin_first_name}
+            onChange={(e) => setForm((prev) => ({ ...prev, admin_first_name: e.target.value }))}
+          />
+          <Input
+            label="Admin Last Name"
+            value={form.admin_last_name}
+            onChange={(e) => setForm((prev) => ({ ...prev, admin_last_name: e.target.value }))}
+          />
+          <Input
+            label="Reset Admin Password"
+            type="password"
+            value={form.admin_password}
+            onChange={(e) => setForm((prev) => ({ ...prev, admin_password: e.target.value }))}
+          />
           <label className="flex items-center gap-2 text-sm text-slate-700">
             <input
               type="checkbox"
@@ -103,7 +136,15 @@ export function InstitutesTable({ institutes }: Props) {
               onClick={() => {
                 if (!selected) return;
                 updateInstitute.mutate(
-                  { instituteId: selected.institute_id, payload: form },
+                  {
+                    instituteId: selected.institute_id,
+                    payload: {
+                      ...form,
+                      admin_first_name: form.admin_first_name || undefined,
+                      admin_last_name: form.admin_last_name || undefined,
+                      admin_password: form.admin_password || undefined
+                    }
+                  },
                   { onSuccess: () => setSelected(null) }
                 );
               }}

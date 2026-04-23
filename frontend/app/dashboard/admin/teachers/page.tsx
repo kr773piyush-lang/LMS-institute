@@ -42,7 +42,6 @@ export default function AdminTeachersPage() {
         ) : (
           <UsersTable
             users={users}
-            allowInstituteAssign
             roleFilter="teacher"
             title="Edit Teacher"
           />
