@@ -553,6 +553,9 @@ video {
 .mb-6{
   margin-bottom: 1.5rem;
 }
+.ml-1{
+  margin-left: 0.25rem;
+}
 .mt-1{
   margin-top: 0.25rem;
 }
@@ -570,9 +573,6 @@ video {
 }
 .mt-8{
   margin-top: 2rem;
-}
-.ml-1{
-  margin-left: 0.25rem;
 }
 .block{
   display: block;
@@ -598,14 +598,14 @@ video {
 .max-h-36{
   max-height: 9rem;
 }
+.min-h-32{
+  min-height: 8rem;
+}
 .min-h-\[50vh\]{
   min-height: 50vh;
 }
 .min-h-\[calc\(100vh-73px\)\]{
   min-height: calc(100vh - 73px);
-}
-.min-h-32{
-  min-height: 8rem;
 }
 .w-full{
   width: 100%;
