@@ -32,17 +32,28 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(title=settings.app_name, debug=settings.debug, lifespan=lifespan)
 
+# app.add_middleware(
+#     CORSMiddleware,
+#     # allow_origins=settings.cors_origins,
+#     allow_origins=[
+#         "https://lms-institute-psi.vercel.app",
+#     ],
+#     allow_credentials=settings.cors_allow_credentials,
+#     allow_methods=settings.cors_allow_methods,
+#     allow_headers=settings.cors_allow_headers,
+#     expose_headers=settings.cors_expose_headers,
+# )
+
 app.add_middleware(
     CORSMiddleware,
-    # allow_origins=settings.cors_origins,
     allow_origins=[
         "https://lms-institute-psi.vercel.app",
     ],
-    allow_credentials=settings.cors_allow_credentials,
-    allow_methods=settings.cors_allow_methods,
-    allow_headers=settings.cors_allow_headers,
-    expose_headers=settings.cors_expose_headers,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
+
 @app.get("/health")
 def health_check() -> dict[str, str]:
     return {"status": "ok"}
