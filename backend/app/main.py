@@ -34,7 +34,10 @@ app = FastAPI(title=settings.app_name, debug=settings.debug, lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,
+    # allow_origins=settings.cors_origins,
+    allow_origins=[
+        "https://lms-institute-psi.vercel.app",
+    ],
     allow_credentials=settings.cors_allow_credentials,
     allow_methods=settings.cors_allow_methods,
     allow_headers=settings.cors_allow_headers,
