@@ -1,4 +1,5 @@
 {
-  "/dashboard/institute-admin/batches/page": "app/dashboard/institute-admin/batches/page.js",
-  "/dashboard/institute-admin/batches/[batchId]/page": "app/dashboard/institute-admin/batches/[batchId]/page.js"
+  "/page": "app/page.js",
+  "/(auth)/login/page": "app/(auth)/login/page.js",
+  "/dashboard/admin/institutes/page": "app/dashboard/admin/institutes/page.js"
 }
