@@ -44,11 +44,15 @@ app = FastAPI(title=settings.app_name, debug=settings.debug, lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://lms-institute-psi.vercel.app","http://localhost:3000"
+        "https://lms-institute-psi.vercel.app",
+        "http://localhost:3000",
+        "http://localhost:3001",
     ],
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    # allow_headers=["*"],
+    allow_headers=["*", "ngrok-skip-browser-warning"],
+    expose_headers=["*"],
 )
 
 @app.get("/health")
