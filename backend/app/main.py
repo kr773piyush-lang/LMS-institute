@@ -54,5 +54,12 @@ app.add_middleware(
 def health_check() -> dict[str, str]:
     return {"status": "ok"}
 
+@app.get("/debug-settings")
+def debug_settings():
+    return {
+        "cors_origins": settings.cors_origins,
+        "allow_credentials": settings.cors_allow_credentials,
+        "database_url": settings.database_url,
+    }
 
 app.include_router(api_router)
