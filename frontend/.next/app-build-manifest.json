@@ -11,21 +11,6 @@
       "static/chunks/main-app.js",
       "static/chunks/app/loading.js"
     ],
-    "/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
-    ],
-    "/(auth)/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/layout.js"
-    ],
-    "/(auth)/login/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(auth)/login/page.js"
-    ],
     "/dashboard/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -36,45 +21,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/loading.js"
     ],
-    "/dashboard/admin/institutes/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/admin/institutes/page.js"
-    ],
-    "/dashboard/admin/institutes/[id]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/admin/institutes/[id]/page.js"
-    ],
-    "/dashboard/admin/courses/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/admin/courses/page.js"
-    ],
-    "/dashboard/admin/batches/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/admin/batches/page.js"
-    ],
-    "/dashboard/admin/users/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/admin/users/page.js"
-    ],
-    "/dashboard/institute-admin/users/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/institute-admin/users/page.js"
-    ],
-    "/dashboard/institute-admin/courses/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/institute-admin/courses/page.js"
-    ],
     "/dashboard/institute-admin/batches/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/institute-admin/batches/page.js"
+    ],
+    "/dashboard/institute-admin/batches/[batchId]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/institute-admin/batches/[batchId]/page.js"
     ]
   }
 }

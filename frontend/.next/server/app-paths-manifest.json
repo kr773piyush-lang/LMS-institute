@@ -1,8 +1,4 @@
 {
-  "/page": "app/page.js",
-  "/(auth)/login/page": "app/(auth)/login/page.js",
-  "/dashboard/admin/users/page": "app/dashboard/admin/users/page.js",
-  "/dashboard/institute-admin/users/page": "app/dashboard/institute-admin/users/page.js",
-  "/dashboard/institute-admin/courses/page": "app/dashboard/institute-admin/courses/page.js",
-  "/dashboard/institute-admin/batches/page": "app/dashboard/institute-admin/batches/page.js"
+  "/dashboard/institute-admin/batches/page": "app/dashboard/institute-admin/batches/page.js",
+  "/dashboard/institute-admin/batches/[batchId]/page": "app/dashboard/institute-admin/batches/[batchId]/page.js"
 }
