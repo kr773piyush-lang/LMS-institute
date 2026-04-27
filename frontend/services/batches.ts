@@ -1,5 +1,5 @@
 import { api } from "@/services/client";
-import { Batch, BatchDetail } from "@/types/lms";
+import { Batch, BatchDetail, MessageResponse } from "@/types/lms";
 
 export async function getBatches(instituteId?: string): Promise<Batch[]> {
   const { data } = await api.get<Batch[]>("/batches", {
@@ -46,6 +46,11 @@ export async function updateBatch(
   }
 ): Promise<Batch> {
   const { data } = await api.put<Batch>(`/batches/${batchId}`, payload);
+  return data;
+}
+
+export async function deleteBatch(batchId: string): Promise<MessageResponse> {
+  const { data } = await api.delete<MessageResponse>(`/batches/${batchId}`);
   return data;
 }
 

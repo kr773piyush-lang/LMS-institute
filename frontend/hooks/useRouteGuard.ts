@@ -17,25 +17,30 @@ export function useRouteGuard() {
     if (!isHydrated) {
       return;
     }
+    const redirectTo = (target: string) => {
+      if (target !== pathname) {
+        router.replace(target);
+      }
+    };
     if (!token) {
-      router.replace("/login");
+      redirectTo("/login");
       return;
     }
     if (!role) {
-      router.replace("/login");
+      redirectTo("/login");
       return;
     }
     if (pathname.startsWith("/dashboard/admin") && role !== "super_admin") {
-      router.replace(getRoleHome(role));
+      redirectTo(getRoleHome(role));
     }
     if (pathname.startsWith("/dashboard/institute-admin") && role !== "institute_admin") {
-      router.replace(getRoleHome(role));
+      redirectTo(getRoleHome(role));
     }
     if (pathname.startsWith("/dashboard/teacher") && role !== "teacher") {
-      router.replace(getRoleHome(role));
+      redirectTo(getRoleHome(role));
     }
     if (pathname.startsWith("/dashboard/student") && role !== "student") {
-      router.replace(getRoleHome(role));
+      redirectTo(getRoleHome(role));
     }
   }, [isHydrated, pathname, role, router, token]);
 

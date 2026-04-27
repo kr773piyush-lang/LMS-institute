@@ -5,13 +5,17 @@ from sqlalchemy.orm import Session
 from app.crud import courses as course_crud
 from app.crud import enrollment as enrollment_crud
 from app.crud.users import get_user_by_id
+from app.dependencies.access import resolve_institute_scope
 from app.dependencies.tenant import TenantContext
+from app.models import User
 from app.models import UserCourse, UserModule
 from app.schemas.enrollment import EnrollUserRequest
 
 
-def assign_user_to_course(db: Session, payload: EnrollUserRequest, tenant: TenantContext) -> UserCourse:
-    institute_id = payload.institute_id if (tenant.allow_multi_tenant and payload.institute_id) else tenant.institute_id
+def assign_user_to_course(
+    db: Session, payload: EnrollUserRequest, tenant: TenantContext, current_user: User
+) -> UserCourse:
+    institute_id = resolve_institute_scope(db, current_user, tenant, payload.institute_id)
 
     user = get_user_by_id(db, payload.user_id)
     if user is None or user.institute_id != institute_id:

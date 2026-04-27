@@ -108,20 +108,90 @@ export async function createModule(payload: {
   return data;
 }
 
+function buildContentFormData(payload: {
+  module_id?: string;
+  title?: string;
+  type?: string;
+  description?: string;
+  external_url?: string;
+  order_index?: number;
+  category?: string;
+  instructions?: string;
+  downloadable?: boolean;
+  response_type?: string;
+  duration?: number;
+  institute_id?: string;
+  replace_file?: boolean;
+  file?: File | null;
+}) {
+  const formData = new FormData();
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === "") {
+      return;
+    }
+    if (key === "file" && value instanceof File) {
+      formData.append("file", value);
+      return;
+    }
+    formData.append(key, String(value));
+  });
+  if (payload.downloadable === false) {
+    formData.append("downloadable", "false");
+  }
+  if (payload.replace_file) {
+    formData.append("replace_file", "true");
+  }
+  return formData;
+}
+
 export async function addContent(payload: {
   module_id: string;
   title: string;
   type: string;
-  url: string;
-  duration: number;
+  description?: string;
+  external_url?: string;
+  order_index?: number;
   category?: string;
-  body_text?: string;
   instructions?: string;
   downloadable?: boolean;
   response_type?: string;
+  duration?: number;
   institute_id?: string;
+  file?: File | null;
 }): Promise<Content> {
-  const { data } = await api.post<Content>("/content", payload);
+  const { data } = await api.post<Content>("/content", buildContentFormData(payload));
+  return data;
+}
+
+export async function getModuleContents(moduleId: string): Promise<Content[]> {
+  const { data } = await api.get<Content[]>(`/modules/${moduleId}/contents`);
+  return data;
+}
+
+export async function updateContent(
+  contentId: string,
+  payload: {
+    title?: string;
+    type?: string;
+    description?: string;
+    external_url?: string;
+    order_index?: number;
+    category?: string;
+    instructions?: string;
+    downloadable?: boolean;
+    response_type?: string;
+    duration?: number;
+    institute_id?: string;
+    replace_file?: boolean;
+    file?: File | null;
+  }
+): Promise<Content> {
+  const { data } = await api.put<Content>(`/content/${contentId}`, buildContentFormData(payload));
+  return data;
+}
+
+export async function deleteContent(contentId: string): Promise<MessageResponse> {
+  const { data } = await api.delete<MessageResponse>(`/content/${contentId}`);
   return data;
 }
 
@@ -134,18 +204,7 @@ export async function getStudentModules(): Promise<
   Array<{
     module_id: string;
     module_name: string;
-    content: Array<{
-      content_id: string;
-      title: string;
-      type: string;
-      category?: string;
-      body_text?: string | null;
-      instructions?: string | null;
-      downloadable?: boolean;
-      response_type?: string | null;
-      url: string;
-      duration: number;
-    }>;
+    content: Content[];
   }>
 > {
   const { data } = await api.get("/students/modules-content");

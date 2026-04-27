@@ -55,7 +55,7 @@ def get_my_modules_with_content(db: Session, current_user: User, tenant: TenantC
             select(Content).where(
                 Content.module_id == module.module_id,
                 Content.institute_id == tenant.institute_id,
-            )
+            ).order_by(Content.order_index, Content.created_at, Content.content_id)
         ).all()
         output.append(
             {
@@ -64,8 +64,16 @@ def get_my_modules_with_content(db: Session, current_user: User, tenant: TenantC
                 "content": [
                     {
                         "content_id": content.content_id,
+                        "institute_id": content.institute_id,
+                        "module_id": content.module_id,
                         "title": content.title,
                         "type": content.type,
+                        "description": content.description,
+                        "file_url": content.file_url,
+                        "external_url": content.external_url,
+                        "resolved_url": content.resolved_url,
+                        "order_index": content.order_index,
+                        "created_by": content.created_by,
                         "category": content.category,
                         "body_text": content.body_text,
                         "instructions": content.instructions,
@@ -156,8 +164,16 @@ def get_student_course_workspace(
         content_by_module.setdefault(content.module_id, []).append(
             {
                 "content_id": content.content_id,
+                "institute_id": content.institute_id,
+                "module_id": content.module_id,
                 "title": content.title,
                 "type": content.type,
+                "description": content.description,
+                "file_url": content.file_url,
+                "external_url": content.external_url,
+                "resolved_url": content.resolved_url,
+                "order_index": content.order_index,
+                "created_by": content.created_by,
                 "category": content.category,
                 "body_text": content.body_text,
                 "instructions": content.instructions,
@@ -178,6 +194,8 @@ def get_student_course_workspace(
                 ),
             }
         )
+    for content_items in content_by_module.values():
+        content_items.sort(key=lambda item: (item["order_index"], item["title"]))
 
     return {
         "course_id": course_id,

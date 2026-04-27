@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
-import { useUpdateBatchMutation } from "@/hooks/useLmsQueries";
+import { useDeleteBatchMutation, useUpdateBatchMutation } from "@/hooks/useLmsQueries";
 import { Batch, Course, SubCourse } from "@/types/lms";
 
 interface Props {
@@ -21,6 +21,7 @@ interface Props {
 
 export function BatchCatalogTable({ batches, courses, subcourses, detailBasePath, instituteId }: Props) {
   const updateBatch = useUpdateBatchMutation();
+  const deleteBatch = useDeleteBatchMutation();
   const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
   const [form, setForm] = useState({
     course_id: "",
@@ -92,6 +93,17 @@ export function BatchCatalogTable({ batches, courses, subcourses, detailBasePath
               <div className="flex flex-wrap gap-2">
                 <Button variant="secondary" onClick={() => openEdit(row)}>
                   Edit
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={() => {
+                    if (window.confirm(`Delete batch "${row.batch_name}"?`)) {
+                      deleteBatch.mutate(row.batch_id);
+                    }
+                  }}
+                  disabled={deleteBatch.isPending}
+                >
+                  Delete
                 </Button>
                 <AppLink
                   href={`${detailBasePath}/${row.batch_id}${instituteId ? `?instituteId=${instituteId}` : ""}`}

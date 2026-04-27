@@ -8,14 +8,17 @@ from app.crud import batches as batch_crud
 from app.crud import courses as course_crud
 from app.crud import roles as roles_crud
 from app.crud.users import get_user_by_id
+from app.dependencies.access import resolve_institute_scope
 from app.dependencies.tenant import TenantContext
 from app.models import Batch, BatchDetail, BatchTeacher, Course, SubCourse, User, UserBatch
 from app.schemas.batch import AssignTeacherRequest, BatchCreate, BatchUpdate
 from app.schemas.enrollment import AssignBatchRequest
 
 
-def create_batch(db: Session, payload: BatchCreate, tenant: TenantContext) -> Batch:
-    institute_id = payload.institute_id if (tenant.allow_multi_tenant and payload.institute_id) else tenant.institute_id
+def create_batch(
+    db: Session, payload: BatchCreate, tenant: TenantContext, current_user: User
+) -> Batch:
+    institute_id = resolve_institute_scope(db, current_user, tenant, payload.institute_id)
     course = course_crud.get_course(db, payload.course_id, institute_id)
     subcourse = course_crud.get_subcourse(db, payload.subcourse_id, institute_id)
     if course is None or subcourse is None or subcourse.course_id != payload.course_id:
@@ -56,8 +59,14 @@ def create_batch(db: Session, payload: BatchCreate, tenant: TenantContext) -> Ba
     return batch
 
 
-def update_batch(db: Session, batch_id: str, payload: BatchUpdate, tenant: TenantContext) -> Batch:
-    institute_id = payload.institute_id if (tenant.allow_multi_tenant and payload.institute_id) else tenant.institute_id
+def update_batch(
+    db: Session,
+    batch_id: str,
+    payload: BatchUpdate,
+    tenant: TenantContext,
+    current_user: User,
+) -> Batch:
+    institute_id = resolve_institute_scope(db, current_user, tenant, payload.institute_id)
     batch = batch_crud.get_batch(db, batch_id, institute_id)
     if batch is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Batch not found.")
@@ -93,8 +102,10 @@ def update_batch(db: Session, batch_id: str, payload: BatchUpdate, tenant: Tenan
     return batch
 
 
-def assign_user_to_batch(db: Session, payload: AssignBatchRequest, tenant: TenantContext) -> UserBatch:
-    institute_id = payload.institute_id if (tenant.allow_multi_tenant and payload.institute_id) else tenant.institute_id
+def assign_user_to_batch(
+    db: Session, payload: AssignBatchRequest, tenant: TenantContext, current_user: User
+) -> UserBatch:
+    institute_id = resolve_institute_scope(db, current_user, tenant, payload.institute_id)
     batch = batch_crud.get_batch(db, payload.batch_id, institute_id)
     if batch is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Batch not found.")
@@ -118,9 +129,9 @@ def assign_user_to_batch(db: Session, payload: AssignBatchRequest, tenant: Tenan
 
 
 def assign_teacher_to_batch(
-    db: Session, payload: AssignTeacherRequest, tenant: TenantContext
+    db: Session, payload: AssignTeacherRequest, tenant: TenantContext, current_user: User
 ) -> BatchTeacher:
-    institute_id = payload.institute_id if (tenant.allow_multi_tenant and payload.institute_id) else tenant.institute_id
+    institute_id = resolve_institute_scope(db, current_user, tenant, payload.institute_id)
     batch = batch_crud.get_batch(db, payload.batch_id, institute_id)
     if batch is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Batch not found.")
@@ -144,10 +155,13 @@ def assign_teacher_to_batch(
 
 
 def list_batches(db: Session, tenant: TenantContext, current_user: User) -> list[Batch]:
-    return list_batches_for_institute(db, tenant.institute_id, current_user)
+    return list_batches_for_institute(db, tenant, tenant.institute_id, current_user)
 
 
-def list_batches_for_institute(db: Session, institute_id: str, current_user: User) -> list[Batch]:
+def list_batches_for_institute(
+    db: Session, tenant: TenantContext, institute_id: str, current_user: User
+) -> list[Batch]:
+    institute_id = resolve_institute_scope(db, current_user, tenant, institute_id)
     role_names = set(roles_crud.get_role_names_for_user(db, current_user.user_id))
     if "teacher" in role_names and "super_admin" not in role_names and "institute_admin" not in role_names:
         teacher_assignments = batch_crud.list_batch_teachers_for_user(
@@ -183,7 +197,7 @@ def get_batch_detail(
     current_user: User,
     institute_id: str | None = None,
 ) -> dict:
-    target_institute_id = institute_id if (tenant.allow_multi_tenant and institute_id) else tenant.institute_id
+    target_institute_id = resolve_institute_scope(db, current_user, tenant, institute_id)
     batch = batch_crud.get_batch(db, batch_id, target_institute_id)
     if batch is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Batch not found.")
@@ -271,3 +285,18 @@ def get_batch_detail(
         "teachers": teachers,
         "students": students,
     }
+
+
+def delete_batch(db: Session, batch_id: str, tenant: TenantContext, current_user: User) -> None:
+    batch = batch_crud.get_batch(db, batch_id, resolve_institute_scope(db, current_user, tenant))
+    if batch is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Batch not found.")
+    try:
+        batch_crud.deactivate_batch(db, batch)
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Batch cannot be deactivated because related data still exists.",
+        ) from exc

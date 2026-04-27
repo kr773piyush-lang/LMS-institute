@@ -9,6 +9,7 @@ from app.crud import enrollment as enrollment_crud
 from app.crud import roles as roles_crud
 from app.crud import users as users_crud
 from app.core.security import get_password_hash, verify_password
+from app.dependencies.access import resolve_institute_scope
 from app.dependencies.tenant import TenantContext
 from app.models import Auth, User, UserCourse, UserModule, UserRole
 from app.schemas.user import ProfileUpdateRequest, UserCreateRequest, UserRead, UserUpdateRequest
@@ -35,12 +36,13 @@ def _serialize_user(db: Session, user: User) -> UserRead:
 
 
 def list_users(db: Session, tenant: TenantContext, current_user: User) -> list[UserRead]:
-    return list_users_for_institute(db, tenant.institute_id, current_user)
+    return list_users_for_institute(db, tenant, tenant.institute_id, current_user)
 
 
 def list_users_for_institute(
-    db: Session, institute_id: str, current_user: User
+    db: Session, tenant: TenantContext, institute_id: str, current_user: User
 ) -> list[UserRead]:
+    institute_id = resolve_institute_scope(db, current_user, tenant, institute_id)
     current_roles = set(roles_crud.get_role_names_for_user(db, current_user.user_id))
     if "super_admin" in current_roles:
         users = users_crud.get_all_users(db)

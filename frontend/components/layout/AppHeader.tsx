@@ -44,6 +44,9 @@ export function AppHeader() {
             <AppLink href="/" className="rounded-md px-3 py-2 hover:bg-slate-100">
               Home
             </AppLink>
+            <AppLink href="/features" className="rounded-md px-3 py-2 hover:bg-slate-100">
+              Features
+            </AppLink>
             <AppLink href="/about" className="rounded-md px-3 py-2 hover:bg-slate-100">
               About
             </AppLink>

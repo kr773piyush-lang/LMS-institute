@@ -24,10 +24,13 @@ pip install -r requirements.txt
 copy .env.example .env
 ```
 
-Update [`.env.example`](C:\Users\HP\Desktop\Project\Institute LMS system\backend\.env.example) values in your local `.env`, especially:
+Update `backend/.env.example` values in your local `.env`, especially:
 
 - `DATABASE_URL`
 - `JWT_SECRET_KEY`
+- `CLOUDINARY_CLOUD_NAME`
+- `CLOUDINARY_API_KEY`
+- `CLOUDINARY_API_SECRET`
 - `DEFAULT_SUPER_ADMIN_EMAIL`
 - `DEFAULT_SUPER_ADMIN_PASSWORD`
 - `CORS_ORIGINS`
@@ -48,6 +51,23 @@ Docs:
 
 - Swagger: `http://127.0.0.1:8000/docs`
 - Health: `http://127.0.0.1:8000/health`
+
+## Cloudinary Storage
+
+Content uploads are stored in Cloudinary instead of PostgreSQL. Configure:
+
+- `CLOUDINARY_CLOUD_NAME`
+- `CLOUDINARY_API_KEY`
+- `CLOUDINARY_API_SECRET`
+- `CLOUDINARY_FOLDER`
+
+Uploaded assets are organized institute-wise with this folder pattern:
+
+```text
+<CLOUDINARY_FOLDER>/institutes/<institute_id>/modules/<module_id>
+```
+
+The database stores the returned Cloudinary URL plus deletion metadata, while the actual file stays in Cloudinary.
 
 ## Production Notes
 
@@ -98,6 +118,10 @@ docker run --env-file backend/.env -p 8000:8000 institute-lms-backend
 | `JWT_SECRET_KEY` | Yes | `long-random-secret` |
 | `JWT_ALGORITHM` | Yes | `HS256` |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | Yes | `1440` |
+| `CLOUDINARY_CLOUD_NAME` | For uploads | `your-cloud-name` |
+| `CLOUDINARY_API_KEY` | For uploads | `123456789012345` |
+| `CLOUDINARY_API_SECRET` | For uploads | `your-secret` |
+| `CLOUDINARY_FOLDER` | For uploads | `institute-lms` |
 | `DEFAULT_SUPER_ADMIN_EMAIL` | Yes | `admin@example.com` |
 | `DEFAULT_SUPER_ADMIN_PASSWORD` | Yes | `StrongPassword123!` |
 | `CORS_ORIGINS` | Yes | `https://your-frontend-domain.com` |

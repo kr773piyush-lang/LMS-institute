@@ -42,7 +42,7 @@ def get_users(
     current_user: User = Depends(get_current_user),
 ) -> list[UserRead]:
     if institute_id:
-        return list_users_for_institute(db, institute_id, current_user)
+        return list_users_for_institute(db, tenant, institute_id, current_user)
     return list_users(db, tenant, current_user)
 
 

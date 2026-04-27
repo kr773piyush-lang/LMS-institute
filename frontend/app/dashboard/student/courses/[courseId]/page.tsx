@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { ContentRenderer } from "@/components/content/ContentRenderer";
 import {
   useStudentCourseWorkspaceQuery,
   useSubmitStudentContentMutation
@@ -105,28 +106,20 @@ export default function StudentCourseWorkspacePage() {
                   <div className="text-xs text-slate-500">{item.duration} min</div>
                 </div>
 
-                {item.body_text ? <p className="mt-3 whitespace-pre-wrap text-sm text-slate-700">{item.body_text}</p> : null}
                 {item.instructions ? <p className="mt-3 text-sm text-slate-600">{item.instructions}</p> : null}
 
-                {item.category === "reading" ? (
-                  <div className="mt-4 space-y-2">
-                    <a href={item.url} target="_blank" rel="noreferrer" className="font-medium text-brand-700 hover:underline">
-                      Read / Preview Resource
-                    </a>
-                    {item.downloadable ? (
-                      <a href={item.url} download className="block text-sm text-slate-600 hover:text-brand-700">
-                        Download file
-                      </a>
-                    ) : null}
-                  </div>
-                ) : null}
+                <div className="mt-4">
+                  <ContentRenderer content={item} />
+                </div>
 
-                {item.category === "listening" ? (
-                  <div className="mt-4">
-                    <audio controls className="w-full">
-                      <source src={item.url} />
-                    </audio>
-                  </div>
+                {item.downloadable && (item.resolved_url || item.url) ? (
+                  <a
+                    href={item.resolved_url ?? item.url ?? "#"}
+                    download
+                    className="mt-3 block text-sm text-slate-600 hover:text-brand-700"
+                  >
+                    Download file
+                  </a>
                 ) : null}
 
                 {item.category === "writing" ? (
@@ -196,4 +189,3 @@ export default function StudentCourseWorkspacePage() {
     </div>
   );
 }
-

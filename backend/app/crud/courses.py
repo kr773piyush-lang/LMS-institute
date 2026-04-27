@@ -103,7 +103,11 @@ def list_modules(
 def list_user_module_content(db: Session, module_ids: list[str], institute_id: str) -> list[Content]:
     if not module_ids:
         return []
-    stmt = select(Content).where(Content.institute_id == institute_id, Content.module_id.in_(module_ids))
+    stmt = (
+        select(Content)
+        .where(Content.institute_id == institute_id, Content.module_id.in_(module_ids))
+        .order_by(Content.order_index, Content.created_at, Content.content_id)
+    )
     return list(db.scalars(stmt).all())
 
 

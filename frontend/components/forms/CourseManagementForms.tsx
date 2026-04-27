@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { Textarea } from "@/components/ui/Textarea";
 
 type CourseFormMode = "course" | "subcourse" | "module" | "content";
 
@@ -53,29 +54,51 @@ export function CourseManagementForms({
     subcourse_id: selectedSubcourseId ?? "",
     module_id: "",
     title: "",
-    type: "resource",
+    type: "text",
     category: "reading",
-    url: "",
+    description: "",
+    external_url: "",
+    order_index: 0,
     duration: 0,
-    body_text: "",
     instructions: "",
     downloadable: false,
-    response_type: ""
+    response_type: "",
+    file: null as File | null
   });
+
+  const activeCourseId =
+    mode === "module" ? module.course_id : mode === "content" ? content.course_id : selectedCourseId;
 
   const visibleSubcourses = useMemo(
     () =>
       subcourses.filter(
-        (entry) =>
-          (!selectedCourseId || entry.course_id === selectedCourseId) &&
-          (!selectedSubcourseId || entry.subcourse_id === selectedSubcourseId)
+        (entry) => !activeCourseId || entry.course_id === activeCourseId
       ),
-    [selectedCourseId, selectedSubcourseId, subcourses]
+    [activeCourseId, subcourses]
   );
 
   const { data: modules = [] } = useModulesQuery(
-    content.subcourse_id ? { course_id: content.course_id, subcourse_id: content.subcourse_id } : undefined
+    content.subcourse_id ? { course_id: content.course_id, subcourse_id: content.subcourse_id } : undefined,
+    { enabled: Boolean(content.course_id && content.subcourse_id) }
   );
+
+  const requiresDescription = content.type === "text" || content.type === "quiz";
+  const allowsFileUpload = ["video", "audio", "pdf", "document"].includes(content.type);
+  const contentValidationMessage = (() => {
+    if (!content.course_id || !content.subcourse_id || !content.module_id || !content.title.trim()) {
+      return null;
+    }
+    if (requiresDescription && !content.description.trim() && !content.external_url.trim()) {
+      return "Add a description or external URL for text and quiz content.";
+    }
+    if (allowsFileUpload && !content.file && !content.external_url.trim()) {
+      return "Upload a file or add an external URL for media and document content.";
+    }
+    if (!["reading", "listening"].includes(content.category) && !content.response_type) {
+      return "Choose how students should submit their response.";
+    }
+    return null;
+  })();
 
   const courseOptions = [
     { label: "Select a course", value: "" },
@@ -199,7 +222,7 @@ export function CourseManagementForms({
 
   return (
     <form
-      className="space-y-3"
+      className="space-y-5"
       onSubmit={(event: FormEvent) => {
         event.preventDefault();
         addContent.mutate(content, {
@@ -207,123 +230,221 @@ export function CourseManagementForms({
             setContent((prev) => ({
               ...prev,
               title: "",
-              url: "",
+              description: "",
+              external_url: "",
+              order_index: 0,
               duration: 0,
-              body_text: "",
               instructions: "",
               downloadable: false,
-              response_type: ""
+              response_type: "",
+              file: null
             }));
             onSuccess?.();
           }
         });
       }}
     >
-      <h3 className="text-lg font-semibold">Add Content</h3>
-      <Select
-        label="Course"
-        options={courseOptions}
-        value={content.course_id}
-        onChange={(e) =>
-          setContent((prev) => ({
-            ...prev,
-            course_id: e.target.value,
-            subcourse_id: "",
-            module_id: ""
-          }))
-        }
-        required
-      />
-      <Select
-        label="SubCourse"
-        options={subcourseOptions}
-        value={content.subcourse_id}
-        onChange={(e) =>
-          setContent((prev) => ({
-            ...prev,
-            subcourse_id: e.target.value,
-            module_id: ""
-          }))
-        }
-        required
-      />
-      <Select
-        label="Module"
-        options={moduleOptions}
-        value={content.module_id}
-        onChange={(e) => setContent((prev) => ({ ...prev, module_id: e.target.value }))}
-        required
-      />
-      <Input
-        label="Title"
-        value={content.title}
-        onChange={(e) => setContent((prev) => ({ ...prev, title: e.target.value }))}
-        required
-      />
-      <Input
-        label="Content Type"
-        value={content.type}
-        onChange={(e) => setContent((prev) => ({ ...prev, type: e.target.value }))}
-        required
-      />
-      <Select
-        label="Learning Category"
-        options={[
-          { label: "Reading", value: "reading" },
-          { label: "Writing", value: "writing" },
-          { label: "Listening", value: "listening" },
-          { label: "Speaking", value: "speaking" }
-        ]}
-        value={content.category}
-        onChange={(e) => setContent((prev) => ({ ...prev, category: e.target.value }))}
-        required
-      />
-      <Input
-        label="URL"
-        type="url"
-        value={content.url}
-        onChange={(e) => setContent((prev) => ({ ...prev, url: e.target.value }))}
-        required
-      />
-      <Input
-        label="Body Text / Notes"
-        value={content.body_text}
-        onChange={(e) => setContent((prev) => ({ ...prev, body_text: e.target.value }))}
-      />
-      <Input
-        label="Instructions / Prompt"
-        value={content.instructions}
-        onChange={(e) => setContent((prev) => ({ ...prev, instructions: e.target.value }))}
-      />
-      {(content.category === "writing" || content.category === "speaking") ? (
-        <Select
-          label="Student Response Type"
-          options={[
-            { label: "Text", value: "text" },
-            { label: "Audio", value: "audio" },
-            { label: "Video", value: "video" }
-          ]}
-          value={content.response_type}
-          onChange={(e) => setContent((prev) => ({ ...prev, response_type: e.target.value }))}
-          required
-        />
-      ) : null}
-      <label className="flex items-center gap-2 text-sm text-slate-700">
-        <input
-          type="checkbox"
-          checked={content.downloadable}
-          onChange={(e) => setContent((prev) => ({ ...prev, downloadable: e.target.checked }))}
-        />
-        Allow students to download the file
-      </label>
-      <Input
-        label="Duration (minutes)"
-        type="number"
-        value={String(content.duration)}
-        onChange={(e) => setContent((prev) => ({ ...prev, duration: Number(e.target.value) }))}
-        required
-      />
-      <Button type="submit" disabled={addContent.isPending}>
+      <div>
+        <h3 className="text-lg font-semibold">Add Content</h3>
+        <p className="mt-1 text-sm text-slate-500">Set the lesson target first, then attach the delivery format and student activity details.</p>
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <p className="mb-3 text-sm font-semibold text-slate-900">Basic Info</p>
+        <div className="grid gap-3 md:grid-cols-2">
+          <Select
+            label="Course"
+            options={courseOptions}
+            value={content.course_id}
+            onChange={(e) =>
+              setContent((prev) => ({
+                ...prev,
+                course_id: e.target.value,
+                subcourse_id: "",
+                module_id: ""
+              }))
+            }
+            required
+            disabled={addContent.isPending}
+          />
+          <Select
+            label="SubCourse"
+            options={subcourseOptions}
+            value={content.subcourse_id}
+            onChange={(e) =>
+              setContent((prev) => ({
+                ...prev,
+                subcourse_id: e.target.value,
+                module_id: ""
+              }))
+            }
+            required
+            disabled={!content.course_id || addContent.isPending}
+          />
+          <Select
+            label="Module"
+            options={moduleOptions}
+            value={content.module_id}
+            onChange={(e) => setContent((prev) => ({ ...prev, module_id: e.target.value }))}
+            required
+            disabled={!content.subcourse_id || addContent.isPending}
+          />
+          <Input
+            label="Title"
+            value={content.title}
+            onChange={(e) => setContent((prev) => ({ ...prev, title: e.target.value }))}
+            required
+            disabled={addContent.isPending}
+          />
+          <Select
+            label="Content Type"
+            options={[
+              { label: "Text / Notes", value: "text" },
+              { label: "Video", value: "video" },
+              { label: "Audio", value: "audio" },
+              { label: "PDF", value: "pdf" },
+              { label: "Document", value: "document" },
+              { label: "Quiz", value: "quiz" }
+            ]}
+            value={content.type}
+            onChange={(e) =>
+              setContent((prev) => ({
+                ...prev,
+                type: e.target.value,
+                file: ["video", "audio", "pdf", "document"].includes(e.target.value) ? prev.file : null
+              }))
+            }
+            required
+            disabled={addContent.isPending}
+          />
+          <Select
+            label="Learning Category"
+            options={[
+              { label: "Reading", value: "reading" },
+              { label: "Writing", value: "writing" },
+              { label: "Listening", value: "listening" },
+              { label: "Speaking", value: "speaking" }
+            ]}
+            value={content.category}
+            onChange={(e) =>
+              setContent((prev) => ({
+                ...prev,
+                category: e.target.value,
+                response_type: ["writing", "speaking"].includes(e.target.value) ? prev.response_type : ""
+              }))
+            }
+            required
+            disabled={addContent.isPending}
+          />
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-white p-4">
+        <p className="mb-3 text-sm font-semibold text-slate-900">Delivery</p>
+        <div className="grid gap-3 md:grid-cols-2">
+          <Textarea
+            className="md:col-span-2"
+            label={content.type === "quiz" ? "Description / Quiz JSON" : "Description / HTML Notes"}
+            value={content.description}
+            onChange={(e) => setContent((prev) => ({ ...prev, description: e.target.value }))}
+            required={requiresDescription}
+            disabled={addContent.isPending}
+          />
+          <Input
+            label="External URL"
+            type="url"
+            value={content.external_url}
+            onChange={(e) => setContent((prev) => ({ ...prev, external_url: e.target.value }))}
+            disabled={addContent.isPending}
+          />
+          <div className="space-y-1">
+            <span className="text-sm font-medium text-slate-700">Upload File</span>
+            <input
+              className="block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+              type="file"
+              accept={
+                content.type === "video"
+                  ? "video/*"
+                  : content.type === "audio"
+                    ? "audio/*"
+                    : content.type === "pdf"
+                      ? ".pdf,application/pdf"
+                      : content.type === "document"
+                        ? ".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
+                        : undefined
+              }
+              disabled={!allowsFileUpload || addContent.isPending}
+              onChange={(e) => setContent((prev) => ({ ...prev, file: e.target.files?.[0] ?? null }))}
+            />
+            <p className="text-xs text-slate-500">
+              {allowsFileUpload
+                ? "Use a local file or an external URL."
+                : "File uploads are disabled for text and quiz content."}
+            </p>
+          </div>
+          <Textarea
+            className="md:col-span-2"
+            label="Instructions / Prompt"
+            value={content.instructions}
+            onChange={(e) => setContent((prev) => ({ ...prev, instructions: e.target.value }))}
+            disabled={addContent.isPending}
+          />
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-white p-4">
+        <p className="mb-3 text-sm font-semibold text-slate-900">Learner Settings</p>
+        <div className="grid gap-3 md:grid-cols-2">
+          {(content.category === "writing" || content.category === "speaking") ? (
+            <Select
+              label="Student Response Type"
+              options={[
+                { label: "Text", value: "text" },
+                { label: "Audio", value: "audio" },
+                { label: "Video", value: "video" }
+              ]}
+              value={content.response_type}
+              onChange={(e) => setContent((prev) => ({ ...prev, response_type: e.target.value }))}
+              required
+              disabled={addContent.isPending}
+            />
+          ) : (
+            <div className="rounded-md border border-dashed border-slate-200 px-3 py-4 text-sm text-slate-500">
+              Student response settings appear for writing and speaking activities.
+            </div>
+          )}
+          <div className="flex items-center rounded-md border border-slate-200 px-3 py-2">
+            <label className="flex items-center gap-2 text-sm text-slate-700">
+              <input
+                type="checkbox"
+                checked={content.downloadable}
+                onChange={(e) => setContent((prev) => ({ ...prev, downloadable: e.target.checked }))}
+                disabled={addContent.isPending}
+              />
+              Allow students to download the file
+            </label>
+          </div>
+          <Input
+            label="Display Order"
+            type="number"
+            value={String(content.order_index)}
+            onChange={(e) => setContent((prev) => ({ ...prev, order_index: Number(e.target.value) }))}
+            required
+            disabled={addContent.isPending}
+          />
+          <Input
+            label="Duration (minutes)"
+            type="number"
+            value={String(content.duration)}
+            onChange={(e) => setContent((prev) => ({ ...prev, duration: Number(e.target.value) }))}
+            required
+            disabled={addContent.isPending}
+          />
+        </div>
+      </div>
+
+      {contentValidationMessage ? <p className="text-sm text-amber-700">{contentValidationMessage}</p> : null}
+      <Button type="submit" disabled={addContent.isPending || Boolean(contentValidationMessage)}>
         {addContent.isPending ? "Saving..." : "Save Content"}
       </Button>
     </form>

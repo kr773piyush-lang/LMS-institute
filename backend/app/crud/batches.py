@@ -69,3 +69,8 @@ def list_batch_teachers_for_batch(db: Session, batch_id: str, institute_id: str)
         BatchTeacher.batch_id == batch_id, BatchTeacher.institute_id == institute_id
     )
     return list(db.scalars(stmt).all())
+
+
+def deactivate_batch(db: Session, batch: Batch) -> None:
+    batch.active = False
+    db.flush()

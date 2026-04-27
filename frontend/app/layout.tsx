@@ -7,8 +7,8 @@ import { Toaster } from "@/components/ui/Toaster";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "LMS Frontend",
-  description: "Multi-tenant LMS frontend with role-based dashboards."
+  title: "Institute LMS",
+  description: "Multi-tenant institute LMS with role-based dashboards, batch delivery, and TalentLMS-style service coverage."
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

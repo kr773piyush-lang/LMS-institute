@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { CourseManagementForms } from "@/components/forms/CourseManagementForms";
+import { ModuleContentList } from "@/components/content/ModuleContentList";
 import { CourseCatalogTables } from "@/components/tables/CourseCatalogTables";
 import { DataTable } from "@/components/tables/DataTable";
 import { Button } from "@/components/ui/Button";
@@ -192,6 +193,21 @@ export function CourseManagementWorkspace({ badge, title, description }: Props) 
               )}
             </div>
           </div>
+
+          {selectedModules.length ? (
+            <div className="mt-8 space-y-4">
+              <h3 className="text-lg font-semibold text-slate-900">Content By Module</h3>
+              {selectedModules.map((module) => (
+                <div key={module.module_id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="mb-4">
+                    <p className="text-base font-semibold text-slate-900">{module.module_name}</p>
+                    <p className="text-sm text-slate-600">Module ID: {module.module_id}</p>
+                  </div>
+                  <ModuleContentList moduleId={module.module_id} canManage />
+                </div>
+              ))}
+            </div>
+          ) : null}
         </Card>
       ) : null}
     </div>

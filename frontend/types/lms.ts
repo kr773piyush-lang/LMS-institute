@@ -54,15 +54,23 @@ export interface Content {
   content_id: string;
   institute_id: string;
   module_id: string;
+  created_by?: string | null;
   title: string;
   type: string;
+  description?: string | null;
+  file_url?: string | null;
+  external_url?: string | null;
+  resolved_url?: string | null;
+  order_index: number;
   category?: string;
   body_text?: string | null;
   instructions?: string | null;
   downloadable?: boolean;
   response_type?: string | null;
-  url: string;
+  url?: string | null;
   duration: number;
+  created_at?: string;
+  updated_at?: string | null;
 }
 
 export interface Batch {

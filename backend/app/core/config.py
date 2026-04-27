@@ -24,6 +24,11 @@ class Settings(BaseSettings):
     jwt_algorithm: str = Field(default="HS256")
     access_token_expire_minutes: int = Field(default=60 * 24)
 
+    cloudinary_cloud_name: str | None = Field(default=None)
+    cloudinary_api_key: str | None = Field(default=None)
+    cloudinary_api_secret: str | None = Field(default=None)
+    cloudinary_folder: str = Field(default="institute-lms")
+
     default_super_admin_email: str = Field(default="admin@gmail.com")
     default_super_admin_password: str = Field(default="Admin123")
     default_super_admin_first_name: str = Field(default="Super")
@@ -53,6 +58,25 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
     )
+
+    @field_validator(
+        "debug",
+        "auto_create_tables",
+        mode="before",
+    )
+    @classmethod
+    def parse_bool_env(cls, value: bool | str | None) -> bool:
+        if isinstance(value, bool):
+            return value
+        if value is None:
+            return False
+
+        raw = str(value).strip().lower()
+        if raw in {"1", "true", "yes", "on", "debug", "development", "dev"}:
+            return True
+        if raw in {"0", "false", "no", "off", "release", "production", "prod"}:
+            return False
+        raise ValueError("Expected a boolean-like value.")
 
     @field_validator(
         "cors_origins",

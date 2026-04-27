@@ -9,10 +9,12 @@ from app.dependencies import (
     resolve_tenant_context,
 )
 from app.models import User
+from app.schemas.common import MessageResponse
 from app.schemas.batch import AssignTeacherRequest, BatchCreate, BatchRead, BatchTeacherRead, BatchUpdate
 from app.services.batch_service import (
     assign_teacher_to_batch,
     create_batch,
+    delete_batch,
     get_batch_detail,
     list_batches,
     list_batches_for_institute,
@@ -32,8 +34,9 @@ def add_batch(
     payload: BatchCreate,
     db: Session = Depends(get_db),
     tenant: TenantContext = Depends(resolve_tenant_context),
+    current_user: User = Depends(get_current_user),
 ) -> BatchRead:
-    return create_batch(db, payload, tenant)
+    return create_batch(db, payload, tenant, current_user)
 
 
 @router.put(
@@ -46,8 +49,9 @@ def edit_batch(
     payload: BatchUpdate,
     db: Session = Depends(get_db),
     tenant: TenantContext = Depends(resolve_tenant_context),
+    current_user: User = Depends(get_current_user),
 ) -> BatchRead:
-    return update_batch(db, batch_id, payload, tenant)
+    return update_batch(db, batch_id, payload, tenant, current_user)
 
 
 @router.post(
@@ -60,8 +64,9 @@ def assign_teacher(
     payload: AssignTeacherRequest,
     db: Session = Depends(get_db),
     tenant: TenantContext = Depends(resolve_tenant_context),
+    current_user: User = Depends(get_current_user),
 ) -> BatchTeacherRead:
-    return assign_teacher_to_batch(db, payload, tenant)
+    return assign_teacher_to_batch(db, payload, tenant, current_user)
 
 
 @router.get(
@@ -76,7 +81,7 @@ def get_batches(
     current_user: User = Depends(get_current_user),
 ) -> list[BatchRead]:
     if institute_id:
-        return list_batches_for_institute(db, institute_id, current_user)
+        return list_batches_for_institute(db, tenant, institute_id, current_user)
     return list_batches(db, tenant, current_user)
 
 
@@ -92,3 +97,18 @@ def batch_detail(
     current_user: User = Depends(get_current_user),
 ) -> dict:
     return get_batch_detail(db, batch_id, tenant, current_user, institute_id=institute_id)
+
+
+@router.delete(
+    "/batches/{batch_id}",
+    response_model=MessageResponse,
+    dependencies=[Depends(require_roles("super_admin", "institute_admin"))],
+)
+def remove_batch(
+    batch_id: str,
+    db: Session = Depends(get_db),
+    tenant: TenantContext = Depends(resolve_tenant_context),
+    current_user: User = Depends(get_current_user),
+) -> MessageResponse:
+    delete_batch(db, batch_id, tenant, current_user)
+    return MessageResponse(message="Batch deleted successfully.")

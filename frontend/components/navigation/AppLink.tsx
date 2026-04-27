@@ -1,7 +1,7 @@
 "use client";
 
 import Link, { LinkProps } from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AnchorHTMLAttributes, MouseEvent } from "react";
 
 import { useUiStore } from "@/store/ui";
@@ -10,7 +10,16 @@ type Props = LinkProps & AnchorHTMLAttributes<HTMLAnchorElement>;
 
 export function AppLink({ onClick, href, ...props }: Props) {
   const router = useRouter();
+  const pathname = usePathname();
   const startNavigation = useUiStore((state) => state.startNavigation);
+  const stopNavigation = useUiStore((state) => state.stopNavigation);
+
+  const hrefPath =
+    typeof href === "string"
+      ? href.startsWith("http")
+        ? new URL(href).pathname
+        : href.split("?")[0]
+      : null;
 
   const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
     onClick?.(event);
@@ -24,6 +33,11 @@ export function AppLink({ onClick, href, ...props }: Props) {
     ) {
       return;
     }
+    if (hrefPath && hrefPath === pathname) {
+      event.preventDefault();
+      stopNavigation();
+      return;
+    }
     startNavigation();
   };
 
@@ -34,7 +48,7 @@ export function AppLink({ onClick, href, ...props }: Props) {
       onClick={handleClick}
       onMouseEnter={(event) => {
         props.onMouseEnter?.(event);
-        if (typeof href === "string") {
+        if (typeof href === "string" && hrefPath !== pathname) {
           router.prefetch(href);
         }
       }}

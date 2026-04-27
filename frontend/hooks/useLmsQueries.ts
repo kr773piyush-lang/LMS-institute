@@ -7,6 +7,7 @@ import {
   assignStudentToBatch,
   assignTeacher,
   createBatch,
+  deleteBatch,
   enrollStudent,
   getBatchDetail,
   getBatches
@@ -17,10 +18,12 @@ import {
   createCourse,
   createModule,
   createSubCourse,
+  deleteContent,
   deleteCourse,
   deleteSubCourse,
   getCourses,
   getCoursesByInstitute,
+  getModuleContents,
   getModules,
   getPublicCourses,
   getPublicSubCourses,
@@ -31,6 +34,7 @@ import {
   getStudentCourseWorkspace,
   getStudentModules,
   submitStudentContentResponse,
+  updateContent,
   updateCourse,
   updateSubCourse
 } from "@/services/courses";
@@ -94,10 +98,22 @@ export function useSubCoursesByInstituteQuery(params?: {
   });
 }
 
-export function useModulesQuery(filters?: { course_id?: string; subcourse_id?: string; institute_id?: string }) {
+export function useModulesQuery(
+  filters?: { course_id?: string; subcourse_id?: string; institute_id?: string },
+  options?: { enabled?: boolean }
+) {
   return useQuery({
     queryKey: ["modules", filters?.institute_id ?? "current", filters?.course_id ?? "all", filters?.subcourse_id ?? "all"],
-    queryFn: () => getModules(filters)
+    queryFn: () => getModules(filters),
+    enabled: options?.enabled ?? true
+  });
+}
+
+export function useModuleContentsQuery(moduleId?: string) {
+  return useQuery({
+    queryKey: ["module-contents", moduleId ?? "none"],
+    queryFn: () => getModuleContents(moduleId as string),
+    enabled: Boolean(moduleId)
   });
 }
 
@@ -309,16 +325,51 @@ export function useDeleteSubCourseMutation() {
 }
 
 export function useCreateModuleMutation() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createModule,
-    onSuccess: () => pushToast("Module created successfully.", "success")
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["modules"] });
+      pushToast("Module created successfully.", "success");
+    }
   });
 }
 
 export function useAddContentMutation() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: addContent,
-    onSuccess: () => pushToast("Content added successfully.", "success")
+    onSuccess: (content) => {
+      queryClient.invalidateQueries({ queryKey: ["module-contents", content.module_id] });
+      queryClient.invalidateQueries({ queryKey: ["student-course-workspace"] });
+      pushToast("Content added successfully.", "success");
+    }
+  });
+}
+
+export function useUpdateContentMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ contentId, payload }: { contentId: string; payload: Parameters<typeof updateContent>[1] }) =>
+      updateContent(contentId, payload),
+    onSuccess: (content) => {
+      queryClient.invalidateQueries({ queryKey: ["module-contents", content.module_id] });
+      queryClient.invalidateQueries({ queryKey: ["student-course-workspace"] });
+      pushToast("Content updated successfully.", "success");
+    }
+  });
+}
+
+export function useDeleteContentMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ contentId, moduleId }: { contentId: string; moduleId: string }) =>
+      deleteContent(contentId).then((result) => ({ ...result, moduleId })),
+    onSuccess: ({ moduleId }) => {
+      queryClient.invalidateQueries({ queryKey: ["module-contents", moduleId] });
+      queryClient.invalidateQueries({ queryKey: ["student-course-workspace"] });
+      pushToast("Content deleted successfully.", "success");
+    }
   });
 }
 
@@ -357,12 +408,25 @@ export function useUpdateBatchMutation() {
   });
 }
 
+export function useDeleteBatchMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteBatch,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["batches"] });
+      queryClient.invalidateQueries({ queryKey: ["batch-detail"] });
+      pushToast("Batch deleted successfully.", "success");
+    }
+  });
+}
+
 export function useAssignTeacherMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: assignTeacher,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["batches"] });
+      queryClient.invalidateQueries({ queryKey: ["batch-detail"] });
       pushToast("Teacher assigned to batch.", "success");
     }
   });
@@ -374,6 +438,7 @@ export function useAssignStudentBatchMutation() {
     mutationFn: assignStudentToBatch,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["batches"] });
+      queryClient.invalidateQueries({ queryKey: ["batch-detail"] });
       pushToast("Student assigned to batch.", "success");
     }
   });

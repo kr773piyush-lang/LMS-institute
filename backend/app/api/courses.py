@@ -10,8 +10,6 @@ from app.dependencies import (
 )
 from app.models import User
 from app.schemas.course import (
-    ContentCreate,
-    ContentRead,
     CourseCreate,
     CourseRead,
     CourseUpdate,
@@ -23,7 +21,6 @@ from app.schemas.course import (
 )
 from app.schemas.common import MessageResponse
 from app.services.course_service import (
-    create_content,
     create_course,
     create_module,
     create_subcourse,
@@ -67,7 +64,7 @@ def get_courses(
     current_user: User = Depends(get_current_user),
 ) -> list[CourseRead]:
     if institute_id:
-        return list_courses_for_institute(db, institute_id, current_user)
+        return list_courses_for_institute(db, tenant, institute_id, current_user)
     return list_courses(db, tenant, current_user)
 
 
@@ -84,7 +81,9 @@ def get_subcourses(
     current_user: User = Depends(get_current_user),
 ) -> list[SubCourseRead]:
     if institute_id:
-        return list_subcourses_for_institute(db, institute_id, current_user, course_id=course_id)
+        return list_subcourses_for_institute(
+            db, tenant, institute_id, current_user, course_id=course_id
+        )
     return list_subcourses(db, tenant, current_user, course_id=course_id)
 
 
@@ -103,7 +102,7 @@ def get_modules(
 ) -> list[ModuleRead]:
     if institute_id:
         return list_modules_for_institute(
-            db, institute_id, current_user, course_id=course_id, subcourse_id=subcourse_id
+            db, tenant, institute_id, current_user, course_id=course_id, subcourse_id=subcourse_id
         )
     return list_modules(db, tenant, current_user, course_id=course_id, subcourse_id=subcourse_id)
 
@@ -150,21 +149,6 @@ def add_module(
     return create_module(db, payload, tenant, current_user)
 
 
-@router.post(
-    "/content",
-    response_model=ContentRead,
-    status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(require_roles("super_admin", "institute_admin", "teacher"))],
-)
-def add_content(
-    payload: ContentCreate,
-    db: Session = Depends(get_db),
-    tenant: TenantContext = Depends(resolve_tenant_context),
-    current_user: User = Depends(get_current_user),
-) -> ContentRead:
-    return create_content(db, payload, tenant, current_user)
-
-
 @router.put(
     "/courses/{course_id}",
     response_model=CourseRead,
@@ -175,8 +159,9 @@ def edit_course(
     payload: CourseUpdate,
     db: Session = Depends(get_db),
     tenant: TenantContext = Depends(resolve_tenant_context),
+    current_user: User = Depends(get_current_user),
 ) -> CourseRead:
-    return update_course(db, course_id, payload, tenant)
+    return update_course(db, course_id, payload, tenant, current_user)
 
 
 @router.delete(
@@ -188,8 +173,9 @@ def remove_course(
     course_id: str,
     db: Session = Depends(get_db),
     tenant: TenantContext = Depends(resolve_tenant_context),
+    current_user: User = Depends(get_current_user),
 ) -> MessageResponse:
-    delete_course(db, course_id, tenant)
+    delete_course(db, course_id, tenant, current_user)
     return MessageResponse(message="Course deleted successfully.")
 
 
@@ -203,8 +189,9 @@ def edit_subcourse(
     payload: SubCourseUpdate,
     db: Session = Depends(get_db),
     tenant: TenantContext = Depends(resolve_tenant_context),
+    current_user: User = Depends(get_current_user),
 ) -> SubCourseRead:
-    return update_subcourse(db, subcourse_id, payload, tenant)
+    return update_subcourse(db, subcourse_id, payload, tenant, current_user)
 
 
 @router.delete(
@@ -216,6 +203,7 @@ def remove_subcourse(
     subcourse_id: str,
     db: Session = Depends(get_db),
     tenant: TenantContext = Depends(resolve_tenant_context),
+    current_user: User = Depends(get_current_user),
 ) -> MessageResponse:
-    delete_subcourse(db, subcourse_id, tenant)
+    delete_subcourse(db, subcourse_id, tenant, current_user)
     return MessageResponse(message="Subcourse deleted successfully.")

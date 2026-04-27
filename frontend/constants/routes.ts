@@ -1,10 +1,10 @@
 import { Role } from "@/types/auth";
 
 export const ROLE_HOME: Record<Role, string> = {
-  super_admin: "/dashboard/admin/institutes",
-  institute_admin: "/dashboard/institute-admin/users",
-  teacher: "/dashboard/teacher/batches",
-  student: "/dashboard/student/courses"
+  super_admin: "/dashboard/admin",
+  institute_admin: "/dashboard/institute-admin",
+  teacher: "/dashboard/teacher",
+  student: "/dashboard/student"
 };
 
 export const PROTECTED_PREFIX = "/dashboard";

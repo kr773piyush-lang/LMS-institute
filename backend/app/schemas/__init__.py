@@ -1,8 +1,7 @@
 from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse
 from app.schemas.batch import AssignTeacherRequest, BatchCreate, BatchRead, BatchTeacherRead
+from app.schemas.content import ContentCreate, ContentRead, ContentUpdate
 from app.schemas.course import (
-    ContentCreate,
-    ContentRead,
     CourseCreate,
     CourseRead,
     ModuleCreate,
@@ -33,6 +32,7 @@ __all__ = [
     "ModuleRead",
     "ContentCreate",
     "ContentRead",
+    "ContentUpdate",
     "EnrollUserRequest",
     "UserCourseRead",
     "AssignBatchRequest",

@@ -1,5 +1,3 @@
-import uuid
-
 from pydantic import BaseModel
 
 from app.schemas.common import ORMBase
@@ -64,37 +62,3 @@ class ModuleRead(ORMBase):
     institute_id: str
     module_name: str
     active: bool
-
-
-class ContentCreate(BaseModel):
-    module_id: str
-    title: str
-    type: str
-    url: str
-    duration: int
-    category: str = "reading"
-    body_text: str | None = None
-    instructions: str | None = None
-    downloadable: bool = False
-    response_type: str | None = None
-    content_id: str | None = None
-    institute_id: str | None = None
-
-
-class ContentRead(ORMBase):
-    content_id: str
-    institute_id: str
-    module_id: str
-    title: str
-    type: str
-    url: str
-    duration: int
-    category: str = "reading"
-    body_text: str | None = None
-    instructions: str | None = None
-    downloadable: bool = False
-    response_type: str | None = None
-
-
-def str_or_uuid(value: str | None) -> str:
-    return value or str(uuid.uuid4())

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { ContentRenderer } from "@/components/content/ContentRenderer";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ProgressBar } from "@/components/ui/ProgressBar";
@@ -34,20 +35,17 @@ export default function StudentModulesPage() {
           <Card key={module.module_id}>
             <h2 className="text-lg font-semibold">{module.module_name}</h2>
             <p className="text-xs text-slate-500">{module.module_id}</p>
-            <div className="mt-3 space-y-2">
+            <div className="mt-3 space-y-3">
               {module.content.map((item) => (
-                <a
-                  key={item.content_id}
-                  href={item.url}
-                  target="_blank"
-                  className="block rounded-md border p-2 hover:bg-slate-50"
-                  rel="noreferrer"
-                >
+                <div key={item.content_id} className="rounded-md border p-3">
                   <p className="text-sm font-medium">{item.title}</p>
                   <p className="text-xs text-slate-500">
                     {item.type.toUpperCase()} • {item.duration} min
                   </p>
-                </a>
+                  <div className="mt-3">
+                    <ContentRenderer content={item} />
+                  </div>
+                </div>
               ))}
             </div>
             <div className="mt-4">

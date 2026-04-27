@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { getRoleHome } from "@/constants/routes";
 import { useAuthStore } from "@/store/auth";
@@ -9,15 +9,19 @@ import { useUiStore } from "@/store/ui";
 
 export default function DashboardEntryPage() {
   const router = useRouter();
+  const pathname = usePathname();
   const role = useAuthStore((state) => state.role);
   const startNavigation = useUiStore((state) => state.startNavigation);
 
   useEffect(() => {
     if (role) {
-      startNavigation();
-      router.replace(getRoleHome(role));
+      const target = getRoleHome(role);
+      if (target !== pathname) {
+        startNavigation();
+        router.replace(target);
+      }
     }
-  }, [role, router, startNavigation]);
+  }, [pathname, role, router, startNavigation]);
 
   return <p className="text-sm text-slate-600">Redirecting...</p>;
 }
