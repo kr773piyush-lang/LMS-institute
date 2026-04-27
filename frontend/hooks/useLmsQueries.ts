@@ -63,10 +63,11 @@ export function useUsersQuery() {
   return useQuery({ queryKey: ["users"], queryFn: getUsers });
 }
 
-export function useUsersByInstituteQuery(instituteId?: string) {
+export function useUsersByInstituteQuery(instituteId?: string, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ["users", "institute", instituteId ?? "current"],
-    queryFn: () => getUsersByInstitute(instituteId)
+    queryFn: () => getUsersByInstitute(instituteId),
+    enabled: options?.enabled ?? true
   });
 }
 

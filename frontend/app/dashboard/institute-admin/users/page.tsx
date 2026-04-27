@@ -7,10 +7,12 @@ import { UserCreateForm } from "@/components/forms/UserCreateForm";
 import { UsersTable } from "@/components/tables/UsersTable";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { useUsersQuery } from "@/hooks/useLmsQueries";
+import { useUsersByInstituteQuery } from "@/hooks/useLmsQueries";
+import { useAuthStore } from "@/store/auth";
 
 export default function InstituteAdminUsersPage() {
-  const { data: users = [], isLoading } = useUsersQuery();
+  const instituteId = useAuthStore((state) => state.instituteId);
+  const { data: users = [], isLoading } = useUsersByInstituteQuery(instituteId ?? undefined);
   const [showCreate, setShowCreate] = useState(false);
   const [showEnrollment, setShowEnrollment] = useState(false);
 

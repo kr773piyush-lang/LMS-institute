@@ -6,12 +6,20 @@ import { BatchManagementForms } from "@/components/forms/BatchManagementForms";
 import { BatchCatalogTable } from "@/components/tables/BatchCatalogTable";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { useBatchesQuery, useCoursesQuery, useSubCoursesQuery } from "@/hooks/useLmsQueries";
+import {
+  useBatchesQuery,
+  useCoursesByInstituteQuery,
+  useSubCoursesByInstituteQuery
+} from "@/hooks/useLmsQueries";
+import { useAuthStore } from "@/store/auth";
 
 export default function InstituteAdminBatchesPage() {
+  const instituteId = useAuthStore((state) => state.instituteId);
   const { data: batches = [], isLoading } = useBatchesQuery();
-  const { data: courses = [] } = useCoursesQuery();
-  const { data: subcourses = [] } = useSubCoursesQuery();
+  const { data: courses = [] } = useCoursesByInstituteQuery(instituteId ?? undefined);
+  const { data: subcourses = [] } = useSubCoursesByInstituteQuery(
+    instituteId ? { institute_id: instituteId } : undefined
+  );
   const [showCreate, setShowCreate] = useState(false);
 
   return (

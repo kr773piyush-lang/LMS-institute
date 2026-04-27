@@ -23,6 +23,8 @@ interface Props {
   subcourses?: SubCourse[];
   selectedCourseId?: string;
   selectedSubcourseId?: string;
+  instituteId?: string;
+  disableCoursePathSelection?: boolean;
   onSuccess?: () => void;
 }
 
@@ -32,6 +34,8 @@ export function CourseManagementForms({
   subcourses = [],
   selectedCourseId,
   selectedSubcourseId,
+  instituteId,
+  disableCoursePathSelection = false,
   onSuccess
 }: Props) {
   const createCourse = useCreateCourseMutation();
@@ -70,15 +74,18 @@ export function CourseManagementForms({
     mode === "module" ? module.course_id : mode === "content" ? content.course_id : selectedCourseId;
 
   const visibleSubcourses = useMemo(
-    () =>
-      subcourses.filter(
-        (entry) => !activeCourseId || entry.course_id === activeCourseId
-      ),
+    () => subcourses.filter((entry) => !activeCourseId || entry.course_id === activeCourseId),
     [activeCourseId, subcourses]
   );
 
   const { data: modules = [] } = useModulesQuery(
-    content.subcourse_id ? { course_id: content.course_id, subcourse_id: content.subcourse_id } : undefined,
+    content.subcourse_id
+      ? {
+          course_id: content.course_id,
+          subcourse_id: content.subcourse_id,
+          institute_id: instituteId
+        }
+      : undefined,
     { enabled: Boolean(content.course_id && content.subcourse_id) }
   );
 
@@ -122,7 +129,7 @@ export function CourseManagementForms({
         onSubmit={(event: FormEvent) => {
           event.preventDefault();
           createCourse.mutate(
-            { course_name: courseName },
+            { course_name: courseName, institute_id: instituteId },
             {
               onSuccess: () => {
                 setCourseName("");
@@ -147,12 +154,15 @@ export function CourseManagementForms({
         className="space-y-3"
         onSubmit={(event: FormEvent) => {
           event.preventDefault();
-          createSubcourse.mutate(subcourse, {
-            onSuccess: () => {
-              setSubcourse((prev) => ({ ...prev, subcourse_name: "" }));
-              onSuccess?.();
+          createSubcourse.mutate(
+            { ...subcourse, institute_id: instituteId },
+            {
+              onSuccess: () => {
+                setSubcourse((prev) => ({ ...prev, subcourse_name: "" }));
+                onSuccess?.();
+              }
             }
-          });
+          );
         }}
       >
         <h3 className="text-lg font-semibold">Add SubCourse</h3>
@@ -162,6 +172,7 @@ export function CourseManagementForms({
           value={subcourse.course_id}
           onChange={(e) => setSubcourse((prev) => ({ ...prev, course_id: e.target.value }))}
           required
+          disabled={disableCoursePathSelection}
         />
         <Input
           label="SubCourse Name"
@@ -182,12 +193,15 @@ export function CourseManagementForms({
         className="space-y-3"
         onSubmit={(event: FormEvent) => {
           event.preventDefault();
-          createModule.mutate(module, {
-            onSuccess: () => {
-              setModule((prev) => ({ ...prev, module_name: "" }));
-              onSuccess?.();
+          createModule.mutate(
+            { ...module, institute_id: instituteId },
+            {
+              onSuccess: () => {
+                setModule((prev) => ({ ...prev, module_name: "" }));
+                onSuccess?.();
+              }
             }
-          });
+          );
         }}
       >
         <h3 className="text-lg font-semibold">Add Module</h3>
@@ -199,6 +213,7 @@ export function CourseManagementForms({
             setModule((prev) => ({ ...prev, course_id: e.target.value, subcourse_id: "" }))
           }
           required
+          disabled={disableCoursePathSelection}
         />
         <Select
           label="SubCourse"
@@ -206,6 +221,7 @@ export function CourseManagementForms({
           value={module.subcourse_id}
           onChange={(e) => setModule((prev) => ({ ...prev, subcourse_id: e.target.value }))}
           required
+          disabled={disableCoursePathSelection}
         />
         <Input
           label="Module Name"
@@ -225,28 +241,33 @@ export function CourseManagementForms({
       className="space-y-5"
       onSubmit={(event: FormEvent) => {
         event.preventDefault();
-        addContent.mutate(content, {
-          onSuccess: () => {
-            setContent((prev) => ({
-              ...prev,
-              title: "",
-              description: "",
-              external_url: "",
-              order_index: 0,
-              duration: 0,
-              instructions: "",
-              downloadable: false,
-              response_type: "",
-              file: null
-            }));
-            onSuccess?.();
+        addContent.mutate(
+          { ...content, institute_id: instituteId },
+          {
+            onSuccess: () => {
+              setContent((prev) => ({
+                ...prev,
+                title: "",
+                description: "",
+                external_url: "",
+                order_index: 0,
+                duration: 0,
+                instructions: "",
+                downloadable: false,
+                response_type: "",
+                file: null
+              }));
+              onSuccess?.();
+            }
           }
-        });
+        );
       }}
     >
       <div>
         <h3 className="text-lg font-semibold">Add Content</h3>
-        <p className="mt-1 text-sm text-slate-500">Set the lesson target first, then attach the delivery format and student activity details.</p>
+        <p className="mt-1 text-sm text-slate-500">
+          Set the lesson target first, then attach the delivery format and student activity details.
+        </p>
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
@@ -265,7 +286,7 @@ export function CourseManagementForms({
               }))
             }
             required
-            disabled={addContent.isPending}
+            disabled={disableCoursePathSelection || addContent.isPending}
           />
           <Select
             label="SubCourse"
@@ -279,7 +300,7 @@ export function CourseManagementForms({
               }))
             }
             required
-            disabled={!content.course_id || addContent.isPending}
+            disabled={disableCoursePathSelection || !content.course_id || addContent.isPending}
           />
           <Select
             label="Module"
@@ -395,7 +416,7 @@ export function CourseManagementForms({
       <div className="rounded-xl border border-slate-200 bg-white p-4">
         <p className="mb-3 text-sm font-semibold text-slate-900">Learner Settings</p>
         <div className="grid gap-3 md:grid-cols-2">
-          {(content.category === "writing" || content.category === "speaking") ? (
+          {content.category === "writing" || content.category === "speaking" ? (
             <Select
               label="Student Response Type"
               options={[

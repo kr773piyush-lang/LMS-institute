@@ -6,6 +6,7 @@ import { CourseManagementForms } from "@/components/forms/CourseManagementForms"
 import { DataTable } from "@/components/tables/DataTable";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { useAuthStore } from "@/store/auth";
 import {
   useBatchesQuery,
   useCoursesQuery,
@@ -16,6 +17,7 @@ import {
 type TeacherFormMode = "module" | "content" | null;
 
 export default function TeacherModulesPage() {
+  const instituteId = useAuthStore((state) => state.instituteId);
   const { data: batches = [], isLoading: batchesLoading } = useBatchesQuery();
   const { data: courses = [] } = useCoursesQuery();
   const { data: subcourses = [] } = useSubCoursesQuery();
@@ -116,6 +118,8 @@ export default function TeacherModulesPage() {
                 subcourses={selectedSubcourse ? [selectedSubcourse] : []}
                 selectedCourseId={selectedBatch.course_id}
                 selectedSubcourseId={selectedBatch.subcourse_id}
+                instituteId={instituteId ?? undefined}
+                disableCoursePathSelection
                 onSuccess={() => setActiveForm(null)}
               />
             </div>
